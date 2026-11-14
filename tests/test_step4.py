@@ -4,6 +4,7 @@ from pathlib import Path
 import re
 
 from src.calculator import calculate_checkout, calculate_prorated_warranty_refund
+from src.query_extractor import extract_query_context
 
 
 def test_calculator_has_no_clock_or_float_arithmetic():
@@ -25,3 +26,14 @@ def test_warranty_worked_example_is_deterministic():
         24000, 12, "2026-01-10", "2026-04-12"
     )
     assert result["refund_amount"] == 18000
+
+
+def test_checkout_query_builds_verified_inputs():
+    context = extract_query_context(
+        "Today is 2026-06-15. I am in Lahore and want to buy a kurta set "
+        "for Rs. 5,000 using code WELCOME10. Shipping is Rs. 430. "
+        "How much will I pay?"
+    )
+    assert context.calc_type == "checkout"
+    assert context.calc_inputs["items"][0]["listed_price"] == 5000
+    assert context.calc_inputs["shipping_fee"] == 430

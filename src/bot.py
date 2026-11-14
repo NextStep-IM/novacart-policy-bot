@@ -39,6 +39,14 @@ RULES (non-negotiable):
 6. Never use today's date from memory; rely only on dates the customer gave.
 7. Be concise, friendly and specific. If a needed fact (date, region, category) is missing, say what
    is missing and ask for it.
+8. Write directly to the customer. Never expose structured data, field names, internal trace keys,
+   retrieval metadata, or implementation details.
+
+Formatting Rules for Your Final Answer:
+1. Start with a 1–2 sentence direct answer in bold or plain text.
+2. Break down calculations or conditions using bullet points (`- `) or numbered steps (`1. `, `2. `) with each step on its own new line.
+3. Include exact `<filename>.md, Section <X.Y>` citations inline after each rule or step.
+4. Keep numbers formatted clearly as `Rs. X,XXX`.
 """
 
 
@@ -67,22 +75,25 @@ class NovaCartPolicyBot:
         user_prompt = self._build_user_prompt(user_query, ctx, resolution, retrieval, calculations)
         raw_answer = ""
         if self.llm_callable is None:
-            answer = self._fallback_answer(calculations, resolution.disclosures)
+            answer = self._fallback_answer(calculations, resolution.disclosures, retrieval)
         else:
             try:
                 raw_answer = self.llm_callable(SYSTEM_PROMPT, user_prompt).strip()
                 answer = raw_answer
             except Exception:
                 answer = ""
-        for citation in CITATION_RE.findall(raw_answer):
-            if citation.split(", Section")[0] not in resolution.active_file_names:
-                warnings = [f"Citation to a file that is not active for this question: {citation}"]
-                break
-        else:
-            warnings = []
+        invalid_raw_citations = [
+            citation
+            for citation in CITATION_RE.findall(raw_answer)
+            if citation.split(", Section")[0] not in resolution.active_file_names
+        ]
+        warnings = [
+            f"Citation to a file that is not active for this question: {citation}"
+            for citation in invalid_raw_citations
+        ]
         used_fallback = not self._valid_answer(answer, retrieval, resolution.disclosures, calculations)
         if used_fallback:
-            answer = self._fallback_answer(calculations, resolution.disclosures)
+            answer = self._fallback_answer(calculations, resolution.disclosures, retrieval)
 
         citations = list(dict.fromkeys(CITATION_RE.findall(answer)))
         active_names = resolution.active_file_names
@@ -133,6 +144,26 @@ class NovaCartPolicyBot:
                 return {"checkout": calculator.calculate_checkout(**inp)}
             if kind == "return_refund":
                 inp.setdefault("region", ctx.region)
+                returned_index = inp.pop("returned_index", None)
+                promo_code = inp.pop("promo_code", None) or ctx.promo_code
+                if returned_index is not None and promo_code:
+                    checkout = calculator.calculate_checkout(
+                        items=inp["items"],
+                        region=ctx.region,
+                        promo_code=promo_code,
+                        shipping_fee=0,
+                        order_date=ctx.order_date,
+                    )
+                    returned_index = int(returned_index)
+                    returned_item = inp["items"][returned_index]
+                    paid_price = (
+                        checkout["step_1_item_prices"][returned_index]
+                        - checkout["step_3_discount_shares"][returned_index]
+                    )
+                    inp["items"] = [{
+                        **returned_item,
+                        "paid_price": paid_price,
+                    }]
                 return {"return_refund": calculator.calculate_return_refund(**inp)}
             if kind == "warranty_refund":
                 inp.setdefault("delivery_date", ctx.delivery_date)
@@ -217,6 +248,8 @@ class NovaCartPolicyBot:
     def _valid_answer(self, answer: str, retrieval, disclosures, calculations=None) -> bool:
         if not answer or not CITATION_RE.findall(answer):
             return False
+        if re.search(r'["\'](?:step_|calculations|retrieved_chunk_ids|calc_inputs)["\']\s*:', answer):
+            return False
         valid = {str(chunk.get("citation")) for chunk in self.chunks}
         if any(citation not in valid for citation in CITATION_RE.findall(answer)):
             return False
@@ -244,16 +277,95 @@ class NovaCartPolicyBot:
         return set()
 
     @staticmethod
-    def _fallback_answer(calculations: dict[str, Any], disclosures) -> str:
-        parts = ["I can answer this from the NovaCart policy records."]
+    def _fallback_answer(calculations: dict[str, Any], disclosures, retrieval=None) -> str:
+        parts: list[str] = []
         if calculations.get("missing_inputs"):
-            parts.append("Please provide: " + ", ".join(calculations["missing_inputs"]) + ".")
-        for name, result in calculations.items():
-            if name != "missing_inputs":
-                parts.append(
-                    f"{name}: {json.dumps(result, sort_keys=True)} "
-                    "(00_how_policies_work_together.md, Section 5.1)"
-                )
+            parts.append(
+                "I need the following information before I can calculate this: "
+                + ", ".join(calculations["missing_inputs"])
+                + "."
+            )
+        checkout = calculations.get("checkout")
+        if checkout and "step_7_total_payable" in checkout:
+            parts.extend([
+                f"Your total payable is **Rs. {checkout['step_7_total_payable']:,}** "
+                "(00_how_policies_work_together.md, Section 5.1).",
+                f"- Merchandise subtotal: Rs. {checkout['step_2_merchandise_subtotal']:,} "
+                "(00_how_policies_work_together.md, Section 5.1).",
+                f"- Promo discount: Rs. {checkout['step_3_discount']:,} "
+                "(12_promo_code_rules.md, Section 3.2).",
+                f"- Shipping: Rs. {checkout['step_5_shipping_fee']:,} "
+                "(06_shipping_fees_and_free_shipping.md, Section 2.2).",
+            ])
+        refund = calculations.get("return_refund")
+        if refund and "total_store_credit" in refund:
+            line = refund.get("lines", [{}])[0]
+            parts.extend([
+                f"Your store credit would be **Rs. {refund['total_store_credit']:,}** "
+                "(14_store_credit.md, Section 3.1).",
+                f"- Paid price for the returned item: Rs. {line.get('paid_price', 0):,} "
+                "(01_returns_policy.md, Section 5.1).",
+                f"- Refund after the return fee: Rs. {refund['refund_amount']:,} "
+                "(01_returns_policy.md, Section 5.3).",
+                f"- Store-credit bonus: Rs. {refund['store_credit_bonus']:,} "
+                "(14_store_credit.md, Section 3.1).",
+            ])
+        elif refund and "refund_amount" in refund:
+            parts.append(
+                f"Your estimated refund is **Rs. {refund['refund_amount']:,}** "
+                "(01_returns_policy.md, Section 5.3)."
+            )
+        warranty = calculations.get("warranty_refund")
+        if warranty and "refund_amount" in warranty:
+            parts.append(
+                f"Your prorated warranty refund would be **Rs. {warranty['refund_amount']:,}** "
+                "(08_warranty_policy.md, Section 4.3)."
+            )
+        if "gst" in calculations:
+            parts.append(
+                f"The GST component is **Rs. {calculations['gst']:,}** "
+                "(00_how_policies_work_together.md, Section 1.2)."
+            )
+        if "export_price" in calculations:
+            parts.append(
+                f"The GST-free international item price is **Rs. {calculations['export_price']:,}** "
+                "(20_international_addendum.md, Section 3.1)."
+            )
+        if "business_days_result" in calculations:
+            parts.append(
+                f"The resulting business-day date is **{calculations['business_days_result']}** "
+                "(00_how_policies_work_together.md, Section 1.5)."
+            )
+        if "calendar_days_result" in calculations:
+            parts.append(
+                f"The resulting calendar-day date is **{calculations['calendar_days_result']}** "
+                "(00_how_policies_work_together.md, Section 1.6)."
+            )
+        if "full_months" in calculations:
+            parts.append(
+                f"The elapsed full months are **{calculations['full_months']}** "
+                "(00_how_policies_work_together.md, Section 1.7)."
+            )
+        errors = [
+            result["error"] for result in calculations.values()
+            if isinstance(result, dict) and result.get("error")
+        ]
+        if errors:
+            parts.append(
+                "I could not complete that calculation because "
+                + "; ".join(errors)
+                + ". Please provide the missing or corrected information."
+            )
+        if not parts:
+            parts.append(
+                "I could not verify that request from the available NovaCart policy excerpts. "
+                "Please provide the relevant date, item, region, or order details, or contact "
+                "NovaCart support."
+            )
+            if retrieval and retrieval.chunks:
+                citation = retrieval.chunks[0].chunk.get("citation")
+                if citation:
+                    parts[-1] += f" ({citation})"
         if disclosures:
             parts.append("Important notes:")
             for disclosure in disclosures:

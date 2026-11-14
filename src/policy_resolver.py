@@ -131,8 +131,7 @@ def resolve_active_policies(
                         f"Two policy files cover the same topic and differ: {loser['file_name']} "
                         f"(effective {loser['effective_date']}) and {winner['file_name']} "
                         f"(effective {winner['effective_date']}). The later one, "
-                        f"{winner['file_name']}, was used. Tell the customer the files differ and "
-                        f"which one was applied."
+                        f"{winner['file_name']}, was used for this answer."
                     ),
                 )
             )
@@ -147,7 +146,7 @@ def resolve_active_policies(
                     message=(
                         f"{candidates[num]['file_name']} is a regional addendum for '{region}' and "
                         f"overrides general and specific files on the topics it covers, whatever "
-                        f"their dates. Where it speaks to the question, use it over the general file."
+                        f"their dates. It applies here because the question concerns that region."
                     ),
                 )
             )
@@ -172,8 +171,7 @@ def resolve_active_policies(
                 message=(
                     f"{fa}, Section 3.2 sets the COD maximum total payable at Rs. 40,000, while "
                     f"{fb}, Section 1.2 sets it at Rs. 50,000. Both files are in force with the same "
-                    f"date and scope, so state what each file says and tell the customer that "
-                    f"NovaCart support must confirm which limit applies."
+                    f"date and scope. NovaCart support must confirm which limit applies."
                 ),
             )
         )

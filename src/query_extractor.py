@@ -125,7 +125,7 @@ _TOPIC_KEYWORDS: dict[str, list[str]] = {
     "warranty": ["warranty", "guarantee"],
     "warranty_claims": ["warranty claim", "repair"],
     "payments": ["payment", "3-d secure", "card", "order limit"],
-    "cod": ["cod", "cash on delivery"],
+    "cod": ["cash on delivery"],
     "promo": ["promo", "coupon", "discount code", "welcome10", "style15", "tech500", "freeship"],
     "sales_bundles": ["sale", "bundle", "flash"],
     "store_credit": ["store credit", "credit balance"],
@@ -179,12 +179,82 @@ def _heuristic_extract(user_query: str) -> dict[str, Any]:
             break
     if re.search(r"\bcod\b|cash on delivery", lowered):
         out["payment_method"] = "cod"
+        if "cod" not in out["topics"]:
+            out["topics"].append("cod")
     money = re.search(r"rs\.?\s*([\d,]+)", lowered)
     if money:
         try:
             out["order_total"] = int(money.group(1).replace(",", ""))
         except ValueError:
             pass
+    if "checkout" in out["topics"] or "how much will i pay" in lowered:
+        amounts = [
+            int(match.replace(",", ""))
+            for match in re.findall(r"rs\.?\s*([\d,]+)", lowered)
+        ]
+        shipping_match = re.search(
+            r"shipping(?:\s+(?:fee|cost))?\s*(?:is|:)?\s*rs\.?\s*([\d,]+)",
+            lowered,
+        )
+        item_amount = amounts[0] if amounts else None
+        shipping_amount = (
+            int(shipping_match.group(1).replace(",", ""))
+            if shipping_match
+            else None
+        )
+        if shipping_amount is not None and item_amount == shipping_amount:
+            item_amount = amounts[1] if len(amounts) > 1 else None
+        if item_amount is not None:
+            category = out["categories"][0] if out["categories"] else "unspecified"
+            out["calc_type"] = "checkout"
+            if out.get("contact_date") and re.search(r"\b(buy|order|ordering|purchase)\b", lowered):
+                out.setdefault("order_date", out["contact_date"])
+            out["calc_inputs"] = {
+                "items": [{"listed_price": item_amount, "category": category}],
+                **({"shipping_fee": shipping_amount} if shipping_amount is not None else {}),
+            }
+    if ("returns" in out["topics"] or "refunds" in out["topics"]) and re.search(
+        r"\breturn\b|\brefund\b", lowered
+    ):
+        item_matches = re.findall(
+            r"\b(shirt|trousers?|jeans|dress|kurta|jacket|hoodie|"
+            r"phone|laptop|headphones?|earbuds?)\b\s*(?:for|at)?\s*"
+            r"rs\.?\s*([\d,]+)",
+            lowered,
+        )
+        if item_matches:
+            items = [
+                {
+                    "name": name,
+                    "listed_price": int(amount.replace(",", "")),
+                    "category": (
+                        "clothing"
+                        if name in {"shirt", "trouser", "trousers", "jeans", "dress", "kurta", "jacket", "hoodie"}
+                        else "electronics"
+                    ),
+                }
+                for name, amount in item_matches
+            ]
+            returned_name = next(
+                (
+                    name
+                    for name, _ in item_matches
+                    if re.search(rf"return\s+(?:only\s+the\s+)?{re.escape(name)}", lowered)
+                ),
+                item_matches[0][0],
+            )
+            out["calc_type"] = "return_refund"
+            out["calc_inputs"] = {
+                "items": items,
+                "returned_index": next(
+                    index for index, item in enumerate(items) if item["name"] == returned_name
+                ),
+                "promo_code": out.get("promo_code"),
+                "to_store_credit": "store credit" in lowered,
+                "reason": "change_of_mind" if "changed my mind" in lowered or "change of mind" in lowered else "change_of_mind",
+            }
+            if out.get("contact_date") and re.search(r"\b(bought|ordered|purchase)\b", lowered):
+                out.setdefault("order_date", out["contact_date"])
     return out
 
 
@@ -210,7 +280,9 @@ JSON keys (use null / [] / {} when unknown; never guess):
   order_total : integer rupees or null
   calc_type : null | "checkout" | "return_refund" | "warranty_refund" | "gst" | "export_price"
               | "business_days" | "calendar_days" | "full_months"
-  calc_inputs : object with the numeric inputs for that calculation (empty if not computable)
+  calc_inputs : object with the numeric inputs for that calculation. For checkout,
+                use {"items":[{"listed_price": integer, "category": string}],
+                "shipping_fee": integer} when those facts are present.
   injection_detected : boolean
 """
 
@@ -275,7 +347,7 @@ def build_default_llm_callable() -> LLMCallable | None:
     }
     provider = (os.environ.get("LLM_PROVIDER") or "").lower()
     if provider not in keys or not keys[provider]:
-        provider = next((p for p in ("anthropic", "openai", "gemini") if keys[p]), "")
+        provider = next((p for p in ("gemini", "openai", "anthropic") if keys[p]), "")
     if not provider:
         return None
     key = keys[provider] or ""
@@ -369,6 +441,8 @@ def extract_query_context(
         seller = "unspecified"
 
     calc_inputs = llm_data.get("calc_inputs")
+    if not isinstance(calc_inputs, dict) or not calc_inputs:
+        calc_inputs = heur.get("calc_inputs", {})
     return ExtractedQueryContext(
         user_query=user_query,
         contact_date=pick("contact_date"),
@@ -383,7 +457,7 @@ def extract_query_context(
         promo_code=pick("promo_code"),
         payment_method=pick("payment_method"),
         order_total=order_total,
-        calc_type=llm_data.get("calc_type") or None,
+        calc_type=llm_data.get("calc_type") or heur.get("calc_type") or None,
         calc_inputs=calc_inputs if isinstance(calc_inputs, dict) else {},
         injection_detected=bool(llm_data.get("injection_detected")) or contains_injection(user_query),
         extraction_source=source,  # type: ignore[arg-type]
