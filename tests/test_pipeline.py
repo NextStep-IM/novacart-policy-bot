@@ -477,7 +477,7 @@ def test_end_to_end_cod_conflict(documents, chunks):
 def test_end_to_end_appends_missing_disclosure(documents, chunks):
     llm = MockLLM(COD_EXTRACTION, "COD is allowed up to Rs. 40,000 (10_payments.md, Section 3.2).")
     resp = NovaCartPolicyBot(documents=documents, chunks=chunks, llm_callable=llm).answer("COD Rs. 45,000?")
-    assert "Important notes" in resp.answer
+    assert "A quick note on our policies" in resp.answer
     assert "50,000" in resp.answer and "confirm" in resp.answer.lower()
 
 

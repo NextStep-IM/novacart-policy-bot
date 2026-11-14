@@ -42,11 +42,27 @@ RULES (non-negotiable):
 8. Write directly to the customer. Never expose structured data, field names, internal trace keys,
    retrieval metadata, or implementation details.
 
-Formatting Rules for Your Final Answer:
-1. Start with a 1–2 sentence direct answer in bold or plain text.
-2. Break down calculations or conditions using bullet points (`- `) or numbered steps (`1. `, `2. `) with each step on its own new line.
-3. Include exact `<filename>.md, Section <X.Y>` citations inline after each rule or step.
-4. Keep numbers formatted clearly as `Rs. X,XXX`.
+Formatting Rules for Your Final Answer (write like a helpful support agent, not a policy manual):
+1. Open with one warm, plain-language sentence that answers the question, with the key figure in bold
+   (e.g. "Good news: you'll receive **Rs. 1,932** in store credit."), followed by its citation.
+   Never open with "Based on the policies" or by repeating the question.
+2. Then add "**Here's how it adds up:**" (or "**What applies to you:**" when there are no numbers) and show
+   each step as its own bullet (`- `) on its own line, in plain words ("Price you paid", "Return fee",
+   "Refund after the fee"), one figure per bullet. Put a blank line before the first bullet.
+3. Put each citation in parentheses at the very END of the bullet or sentence it supports, in the exact
+   `<filename>.md, Section <X.Y>` form. Cite each rule once; never repeat the same citation in one line and
+   never put citations in the middle of a sentence.
+4. If a MANDATORY DISCLOSURE applies, add a short section titled "**A quick note on our policies**" in
+   everyday language (no field names or jargon). Name every file involved by its exact file name, say that
+   the files differ, say which one you used and why (it is the later, in-force version), and cite
+   00_how_policies_work_together.md, Section 4.2 (or 4.4 when support must confirm). Never skip it.
+5. Format money as `Rs. X,XXX` and dates as `15 June 2026`. Never show internal keys, step numbers or
+   retrieval details. Do not add a "Sources" list; the app shows sources separately.
+6. Keep it short (about 150 words unless the question truly needs more). Mention anything that is NOT
+   refunded or any limit that matters to the customer in one friendly sentence.
+7. End with at most one short offer of further help or, when a fact is missing, one clear question.
+8. If you cannot answer from the excerpts, say so kindly in one sentence, say what is missing, and suggest
+   contacting NovaCart support.
 """
 
 
@@ -79,7 +95,7 @@ class NovaCartPolicyBot:
         else:
             try:
                 raw_answer = self.llm_callable(SYSTEM_PROMPT, user_prompt).strip()
-                answer = raw_answer
+                answer = self._polish_answer(raw_answer)
             except Exception:
                 answer = ""
         invalid_raw_citations = [
@@ -226,6 +242,30 @@ class NovaCartPolicyBot:
         )
 
     @staticmethod
+    def _polish_answer(answer: str) -> str:
+        """Layout-only tidy-up. Never changes numbers, file names or citations."""
+        if not answer:
+            return answer
+        text = answer.replace("\\n", "\n").replace("\r\n", "\n").strip()
+        text = re.sub(r"(?<=[.)\w])[ \t]+[*\u2022][ \t]+(?=[A-Z])", "\n- ", text)
+        text = re.sub(r"(?m)^[ \t]*[*\u2022][ \t]+", "- ", text)
+        text = re.sub(
+            r"[ \t]*(?:\*\*)?(?:Important notes?|Policy notes?)(?:\*\*)?:?[ \t]*",
+            "\n\n**A quick note on our policies**\n",
+            text,
+            flags=re.IGNORECASE,
+        )
+        text = re.sub(r"([^\n])\n(\*\*[^*\n]+\*\*:?)[ \t]*(?=\n|$)", r"\1\n\n\2", text)
+        text = re.sub(r"(?m)^([^-\n][^\n]*)\n(- )", r"\1\n\n\2", text)
+        text = re.sub(
+            r"(\b\d{2}_[a-z0-9_]+\.md, Section \d+(?:\.\d+)*), (?=\d{2}_[a-z0-9_]+\.md, Section)",
+            r"\1; ",
+            text,
+        )
+        text = re.sub(r"\n{3,}", "\n\n", text)
+        return text.strip()
+
+    @staticmethod
     def _ensure_disclosures(answer: str, disclosures) -> str:
         lowered = answer.lower()
         missing = []
@@ -277,6 +317,36 @@ class NovaCartPolicyBot:
         return set()
 
     @staticmethod
+    def _friendly_disclosure(d) -> str:
+        """Plain-language version of a mandatory disclosure."""
+        if d.kind == "superseded_version":
+            found = re.findall(r"(\S+\.md) \(effective (\d{4}-\d{2}-\d{2})\)", d.message)
+            dates = {name: when for name, when in found}
+            winner, loser = (d.files + ["", ""])[:2]
+            w = f"{winner} (effective {dates[winner]})" if winner in dates else winner
+            l = f"{loser} (effective {dates[loser]})" if loser in dates else loser
+            return (
+                f"We have two versions of this policy and they differ: {l} and {w}. "
+                f"I used the newer one, {winner}, because it is the version in force for your "
+                "question (00_how_policies_work_together.md, Section 4.2)."
+            )
+        if d.kind == "unresolved_conflict":
+            return (
+                "Our policy files disagree on this point. "
+                + d.message
+                + " Please contact NovaCart support to confirm (00_how_policies_work_together.md, Section 4.4)."
+            )
+        if d.kind == "regional_override":
+            return d.message + " (00_how_policies_work_together.md, Section 4.1)"
+        if d.kind == "missing_date":
+            return (
+                "I couldn't see a date in your question, so I couldn't check which policy version "
+                "applies on that day. Tell me the date and I'll double-check "
+                "(00_how_policies_work_together.md, Section 3.1)."
+            )
+        return d.message
+
+    @staticmethod
     def _fallback_answer(calculations: dict[str, Any], disclosures, retrieval=None) -> str:
         parts: list[str] = []
         if calculations.get("missing_inputs"):
@@ -300,16 +370,27 @@ class NovaCartPolicyBot:
         refund = calculations.get("return_refund")
         if refund and "total_store_credit" in refund:
             line = refund.get("lines", [{}])[0]
-            parts.extend([
-                f"Your store credit would be **Rs. {refund['total_store_credit']:,}** "
-                "(14_store_credit.md, Section 3.1).",
-                f"- Paid price for the returned item: Rs. {line.get('paid_price', 0):,} "
-                "(01_returns_policy.md, Section 5.1).",
-                f"- Refund after the return fee: Rs. {refund['refund_amount']:,} "
-                "(01_returns_policy.md, Section 5.3).",
-                f"- Store-credit bonus: Rs. {refund['store_credit_bonus']:,} "
-                "(14_store_credit.md, Section 3.1).",
+            item = line.get("name") or "item"
+            steps = [
+                f"- Price you paid for the {item}, after any promo discount: Rs. {line.get('paid_price', 0):,} "
+                "(01_returns_policy.md, Section 5.1)",
+            ]
+            if refund.get("return_fee"):
+                steps.append(
+                    f"- Return fee: Rs. {refund['return_fee']:,} "
+                    "(01_returns_policy.md, Section 4.1)"
+                )
+            steps.extend([
+                f"- Refund after the fee: Rs. {refund['refund_amount']:,} "
+                "(01_returns_policy.md, Section 5.3)",
+                f"- Store-credit bonus (5%): Rs. {refund['store_credit_bonus']:,} "
+                "(14_store_credit.md, Section 3.1)",
             ])
+            parts.append(
+                f"Good news: you'll receive **Rs. {refund['total_store_credit']:,}** in store credit "
+                "(14_store_credit.md, Section 3.1)."
+            )
+            parts.append("\nHere's how it adds up:\n" + "\n".join(steps))
         elif refund and "refund_amount" in refund:
             parts.append(
                 f"Your estimated refund is **Rs. {refund['refund_amount']:,}** "
@@ -367,10 +448,7 @@ class NovaCartPolicyBot:
                 if citation:
                     parts[-1] += f" ({citation})"
         if disclosures:
-            parts.append("Important notes:")
+            parts.append("\n**A quick note on our policies**")
             for disclosure in disclosures:
-                citation = ", ".join(
-                    f"{file}, Section 4.2" for file in disclosure.files
-                ) or "00_how_policies_work_together.md, Section 4.2"
-                parts.append(disclosure.message + f" ({citation})")
+                parts.append(NovaCartPolicyBot._friendly_disclosure(disclosure))
         return "\n".join(parts)
