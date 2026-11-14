@@ -1,5 +1,5 @@
 """NovaCart Policy Q&A Bot (Tech Fusion '26 - AI Hackathon - Challenge A)."""
-
+from .retriever import build_chunk_indices, load_policy_chunks, retrieve_relevant_chunks
 from .schemas import (
     ActivePolicyFile,
     BotResponse,

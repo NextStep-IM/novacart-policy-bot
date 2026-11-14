@@ -5,18 +5,16 @@ from __future__ import annotations
 from datetime import date
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 Region = Literal["metro", "remote", "international", "rest_of_pakistan", "unspecified"]
 Seller = Literal["novacart", "marketplace", "unspecified"]
-
 DisclosureKind = Literal[
     "superseded_version",
     "unresolved_conflict",
     "regional_override",
     "missing_date",
 ]
-
 ExclusionReason = Literal["not_yet_in_force", "superseded", "regional_not_applicable"]
 
 
@@ -111,19 +109,58 @@ class PolicyResolutionResult(BaseModel):
 
 class RetrievedChunk(BaseModel):
     chunk: dict[str, Any]
-    score: float
-    source: Literal["direct", "cross_reference"] = "direct"
+    score: float = 0.0
+    retrieval_source: Literal["primary", "cross_reference"] = "primary"
+    source: Literal["direct", "primary", "cross_reference"] = "primary"
+    referenced_by: list[str] = Field(default_factory=list)
     via_chunk_id: str | None = None
+
+    @model_validator(mode="after")
+    def _sync_source_fields(self) -> "RetrievedChunk":
+        if self.source == "cross_reference" or self.retrieval_source == "cross_reference":
+            self.retrieval_source = "cross_reference"
+            self.source = "cross_reference"
+        else:
+            self.retrieval_source = "primary"
+            self.source = "primary"
+        return self
 
 
 class RetrievalResult(BaseModel):
     query: str
+    primary_chunks: list[RetrievedChunk] = Field(default_factory=list)
+    cross_referenced_chunks: list[RetrievedChunk] = Field(default_factory=list)
+    all_chunks: list[RetrievedChunk] = Field(default_factory=list)
     chunks: list[RetrievedChunk] = Field(default_factory=list)
+    expansion_trace: list[dict[str, Any]] = Field(default_factory=list)
     skipped_cross_references: list[dict[str, Any]] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _sync_chunk_lists(self) -> "RetrievalResult":
+        if not self.all_chunks and (self.primary_chunks or self.cross_referenced_chunks):
+            self.all_chunks = [*self.primary_chunks, *self.cross_referenced_chunks]
+        elif self.all_chunks and not (self.primary_chunks or self.cross_referenced_chunks):
+            self.primary_chunks = [c for c in self.all_chunks if c.retrieval_source == "primary"]
+            self.cross_referenced_chunks = [
+                c for c in self.all_chunks if c.retrieval_source == "cross_reference"
+            ]
+        elif not self.all_chunks and self.chunks:
+            self.all_chunks = list(self.chunks)
+            self.primary_chunks = [c for c in self.all_chunks if c.retrieval_source == "primary"]
+            self.cross_referenced_chunks = [
+                c for c in self.all_chunks if c.retrieval_source == "cross_reference"
+            ]
+
+        self.chunks = list(self.all_chunks)
+        if not self.skipped_cross_references and self.expansion_trace:
+            self.skipped_cross_references = [
+                t for t in self.expansion_trace if t.get("action") == "skipped"
+            ]
+        return self
 
     @property
     def chunk_ids(self) -> list[str]:
-        return [c.chunk["chunk_id"] for c in self.chunks]
+        return [c.chunk["chunk_id"] for c in self.all_chunks]
 
 
 class BotResponse(BaseModel):
