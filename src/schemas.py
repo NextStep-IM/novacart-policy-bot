@@ -60,6 +60,15 @@ class ExtractedQueryContext(BaseModel):
             return None
         return str(v).strip().upper()
 
+    @property
+    def is_calculation_required(self) -> bool:
+        """Whether the query asks for deterministic arithmetic."""
+        calculation_topics = {"checkout", "gst", "refunds", "warranty"}
+        return bool(
+            self.calc_type
+            or calculation_topics.intersection(topic.lower() for topic in self.topics)
+        )
+
 
 class ActivePolicyFile(BaseModel):
     file_num: str
@@ -106,6 +115,10 @@ class PolicyResolutionResult(BaseModel):
     def active_file_names(self) -> set[str]:
         return {a.file_name for a in self.active}
 
+    @property
+    def mandatory_disclosures(self) -> list[MandatoryDisclosure]:
+        return self.disclosures
+
 
 class RetrievedChunk(BaseModel):
     chunk: dict[str, Any]
@@ -120,6 +133,8 @@ class RetrievedChunk(BaseModel):
         if self.source == "cross_reference" or self.retrieval_source == "cross_reference":
             self.retrieval_source = "cross_reference"
             self.source = "cross_reference"
+        elif self.source == "direct":
+            self.retrieval_source = "primary"
         else:
             self.retrieval_source = "primary"
             self.source = "primary"
@@ -163,6 +178,16 @@ class RetrievalResult(BaseModel):
         return [c.chunk["chunk_id"] for c in self.all_chunks]
 
 
+class CalculationTrace(BaseModel):
+    """One deterministic calculation result and its policy citations."""
+
+    name: str
+    steps: list[dict[str, Any]] = Field(default_factory=list)
+    result: dict[str, Any] = Field(default_factory=dict)
+    citations: list[str] = Field(default_factory=list)
+    missing_inputs: list[str] = Field(default_factory=list)
+
+
 class BotResponse(BaseModel):
     query: str
     answer: str
@@ -172,5 +197,29 @@ class BotResponse(BaseModel):
     resolution: PolicyResolutionResult
     retrieved_chunk_ids: list[str] = Field(default_factory=list)
     calculations: dict[str, Any] = Field(default_factory=dict)
+    calculation_trace: list[CalculationTrace] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
     injection_detected: bool = False
+
+    @property
+    def citations_used(self) -> list[str]:
+        return self.citations
+
+    @property
+    def active_policies(self) -> list[ActivePolicyFile]:
+        return self.resolution.active
+
+    @property
+    def mandatory_disclosures(self) -> list[MandatoryDisclosure]:
+        return self.disclosures
+
+    @property
+    def query_context(self) -> ExtractedQueryContext:
+        return self.context
+
+    @property
+    def injection_flagged(self) -> bool:
+        return self.injection_detected
+
+
+QueryContext = ExtractedQueryContext

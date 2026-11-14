@@ -3,8 +3,10 @@ from .retriever import build_chunk_indices, load_policy_chunks, retrieve_relevan
 from .schemas import (
     ActivePolicyFile,
     BotResponse,
+    CalculationTrace,
     ExcludedPolicyFile,
     ExtractedQueryContext,
+    QueryContext,
     MandatoryDisclosure,
     PolicyResolutionResult,
     RetrievalResult,
@@ -22,6 +24,7 @@ from .retriever import load_policy_chunks, retrieve_relevant_chunks
 from .calculator import (
     add_business_days,
     add_calendar_days,
+    calculate_checkout,
     calculate_checkout_total,
     calculate_prorated_warranty_refund,
     calculate_return_refund,
@@ -36,8 +39,10 @@ from .bot import NovaCartPolicyBot
 __all__ = [
     "ActivePolicyFile",
     "BotResponse",
+    "CalculationTrace",
     "ExcludedPolicyFile",
     "ExtractedQueryContext",
+    "QueryContext",
     "MandatoryDisclosure",
     "NovaCartPolicyBot",
     "PolicyResolutionResult",
@@ -47,6 +52,7 @@ __all__ = [
     "add_calendar_days",
     "build_default_llm_callable",
     "calculate_checkout_total",
+    "calculate_checkout",
     "calculate_prorated_warranty_refund",
     "calculate_return_refund",
     "compute_international_export_price",

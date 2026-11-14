@@ -358,7 +358,7 @@ def retrieve_relevant_chunks(
             chunk=pool[idx],
             score=round(sc, 4),
             retrieval_source="primary",
-            source="primary",
+            source="direct",
         )
         for sc, idx in scored[:top_k]
     ]
