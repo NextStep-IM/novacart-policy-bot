@@ -1,0 +1,139 @@
+"""Pydantic v2 models shared across the NovaCart pipeline."""
+
+from __future__ import annotations
+
+from datetime import date
+from typing import Any, Literal
+
+from pydantic import BaseModel, Field, field_validator
+
+Region = Literal["metro", "remote", "international", "rest_of_pakistan", "unspecified"]
+Seller = Literal["novacart", "marketplace", "unspecified"]
+
+DisclosureKind = Literal[
+    "superseded_version",
+    "unresolved_conflict",
+    "regional_override",
+    "missing_date",
+]
+
+ExclusionReason = Literal["not_yet_in_force", "superseded", "regional_not_applicable"]
+
+
+def _valid_iso_or_none(value: Any) -> str | None:
+    if value is None or value == "":
+        return None
+    try:
+        return date.fromisoformat(str(value).strip()).isoformat()
+    except ValueError:
+        return None
+
+
+class ExtractedQueryContext(BaseModel):
+    """Structured facts pulled from the customer's message (Step 1)."""
+
+    user_query: str
+    contact_date: str | None = None
+    order_date: str | None = None
+    delivery_date: str | None = None
+    claim_date: str | None = None
+    destination: str | None = None
+    region: Region = "unspecified"
+    categories: list[str] = Field(default_factory=list)
+    seller: Seller = "unspecified"
+    topics: list[str] = Field(default_factory=list)
+    promo_code: str | None = None
+    payment_method: str | None = None
+    order_total: int | None = None
+    calc_type: str | None = None
+    calc_inputs: dict[str, Any] = Field(default_factory=dict)
+    injection_detected: bool = False
+    extraction_source: Literal["llm", "heuristic"] = "heuristic"
+
+    @field_validator("contact_date", "order_date", "delivery_date", "claim_date", mode="before")
+    @classmethod
+    def _check_dates(cls, v: Any) -> str | None:
+        return _valid_iso_or_none(v)
+
+    @field_validator("promo_code", mode="before")
+    @classmethod
+    def _upper_promo(cls, v: Any) -> str | None:
+        if v is None or str(v).strip() == "":
+            return None
+        return str(v).strip().upper()
+
+
+class ActivePolicyFile(BaseModel):
+    file_num: str
+    file_name: str
+    doc_id: str
+    version: str
+    effective_date: str
+    scope: str
+    reason: str = ""
+
+
+class ExcludedPolicyFile(BaseModel):
+    file_num: str
+    file_name: str
+    doc_id: str
+    version: str
+    effective_date: str
+    scope: str
+    reason: ExclusionReason
+    detail: str = ""
+
+
+class MandatoryDisclosure(BaseModel):
+    """Something the final answer MUST tell the customer."""
+
+    kind: DisclosureKind
+    files: list[str]
+    message: str
+
+
+class PolicyResolutionResult(BaseModel):
+    reference_date: str | None
+    promo_reference_date: str | None = None
+    region: Region = "unspecified"
+    active: list[ActivePolicyFile] = Field(default_factory=list)
+    excluded: list[ExcludedPolicyFile] = Field(default_factory=list)
+    disclosures: list[MandatoryDisclosure] = Field(default_factory=list)
+
+    @property
+    def active_file_nums(self) -> set[str]:
+        return {a.file_num for a in self.active}
+
+    @property
+    def active_file_names(self) -> set[str]:
+        return {a.file_name for a in self.active}
+
+
+class RetrievedChunk(BaseModel):
+    chunk: dict[str, Any]
+    score: float
+    source: Literal["direct", "cross_reference"] = "direct"
+    via_chunk_id: str | None = None
+
+
+class RetrievalResult(BaseModel):
+    query: str
+    chunks: list[RetrievedChunk] = Field(default_factory=list)
+    skipped_cross_references: list[dict[str, Any]] = Field(default_factory=list)
+
+    @property
+    def chunk_ids(self) -> list[str]:
+        return [c.chunk["chunk_id"] for c in self.chunks]
+
+
+class BotResponse(BaseModel):
+    query: str
+    answer: str
+    citations: list[str] = Field(default_factory=list)
+    disclosures: list[MandatoryDisclosure] = Field(default_factory=list)
+    context: ExtractedQueryContext
+    resolution: PolicyResolutionResult
+    retrieved_chunk_ids: list[str] = Field(default_factory=list)
+    calculations: dict[str, Any] = Field(default_factory=dict)
+    warnings: list[str] = Field(default_factory=list)
+    injection_detected: bool = False
