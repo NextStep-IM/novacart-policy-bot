@@ -1,0 +1,420 @@
+[
+  {
+    "file_name": "00_how_policies_work_together.md",
+    "file_num": "00",
+    "sha256": "216f52f84be80934dab91c3668ba94b035f3ca58846ac76aa02dc6073a989fd8",
+    "metadata": {
+      "doc_id": "NC-POL-00",
+      "title": "How NovaCart Policies Work Together",
+      "version": "1.0",
+      "effective_date": "2026-01-01",
+      "last_updated": "2025-12-15",
+      "scope": "general"
+    },
+    "raw_front_matter": "doc_id: NC-POL-00\ntitle: How NovaCart Policies Work Together\nversion: 1.0\neffective_date: 2026-01-01\nlast_updated: 2025-12-15\nscope: general",
+    "clean_markdown": "# How NovaCart Policies Work Together\n\nNovaCart is a fictional online store created for the Tech Fusion '26 AI Hackathon. Every policy, price, fee and date in these files is invented. This file explains the conventions that all other policy files use.\n\n## 1. Conventions\n\n**1.1** Currency. All amounts are in Pakistani Rupees (PKR), written \"Rs.\". Amounts are whole rupees.\n\n**1.2** Tax. Listed prices include 18% GST. The GST contained in a GST-inclusive price is the price multiplied by 18 and divided by 118, rounded half up. GST is not shown separately unless a file says so.\n\n**1.3** Rounding. When a rule produces an amount that is not a whole rupee (a percentage discount, a restocking fee, a proportional share), the amount is rounded half up to the nearest whole rupee at the moment it is computed. Decimals are never carried into a later step.\n\n**1.4** Dates. Dates are written YYYY-MM-DD.\n\n**1.5** Business days. Business days are Monday to Friday. Public holidays are not excluded. Counting starts on the first business day after the event.\n\n**1.6** Days from delivery. A time limit of N days from delivery ends on the delivery date plus N calendar days. A request made on that last day is in time.\n\n**1.7** Full months. Full months elapsed from date A to date B are counted in whole calendar months. A month is complete on the same day of the month as date A. If the later month has no such day, it is complete on the last day of that month. Example: from 2026-01-10 to 2026-04-09 is 2 full months, and from 2026-01-10 to 2026-04-10 is 3 full months.\n\n**1.8** Contact date. The contact date is the day the customer asks a question or submits a request.\n\n## 2. Regions, categories and sellers\n\n**2.1** Metro cities are Islamabad, Lahore and Karachi. Only these three cities are Metro cities.\n\n**2.2** Remote areas are Azad Jammu & Kashmir and Gilgit-Baltistan.\n\n**2.3** International means delivery to the USA, the UK or the UAE. No other country is served.\n\n**2.4** Rest of Pakistan means every place in Pakistan that is not a Metro city and not a Remote area.\n\n**2.5** Every item belongs to exactly one category: electronics, clothing, grocery/perishables, furniture/bulky, or personal care. A bulky item is any item in the furniture/bulky category.\n\n**2.6** Items are either \"Sold by NovaCart\" or sold by a marketplace seller (see [file 17, Section 1]). Files that do not mention marketplace items apply to items Sold by NovaCart only.\n\n## 3. Which version of a policy is in force\n\n**3.1** Every file has an effective_date in its front matter. A file is in force on a contact date if its effective_date is on or before that date. A file whose effective_date is after the contact date is not yet in force and is not applied.\n\n**3.2** The contact date decides which file applies. The only exception is the validity of a promo code, which depends on the order date (see [file 12, Section 1]).\n\n## 4. When two files disagree\n\n**4.1** A file with scope \"regional\" overrides files with scope \"general\" or \"specific\" for the region it covers and for the topics it covers, whatever the dates. Topics a regional file does not mention follow the other files.\n\n**4.2** If two files in force cover the same topic with the same scope and have different effective dates, the file with the later effective_date applies. The customer must be told that the files differ and which one was used.\n\n**4.3** If two files in force have the same effective_date and different scope values, the file with the more specific scope applies. From least to most specific the order is: general, specific, regional.\n\n**4.4** If two files in force have the same effective_date, the same scope and different rules for the same topic, the files do not settle the question. The customer must be told what each file says and that NovaCart support must confirm.\n\n**4.5** Dates and scope are read only from the front matter of each file.\n\n## 5. Order of calculation for checkout totals\n\n**5.1** Totals are worked out in this order:\n\n1. Item prices: the sale price where an item is on sale, or the bundle price for a bundle (see [file 13, Section 1]).\n2. Merchandise subtotal: the sum of the item prices.\n3. Discount code: calculated on the eligible subtotal (see [file 12, Section 3]).\n4. Subtotal after discount: the merchandise subtotal minus the discount.\n5. Standard shipping fee: decided using the subtotal after discount (see [file 06, Section 2]).\n6. Extra charges: express fee, bulky surcharges and the COD fee. These are never discounted and never count toward free-shipping thresholds.\n7. Total payable: the subtotal after discount plus the shipping fee plus the extra charges.\n\n**5.2** The FREESHIP code works at step 5 (see [file 12, Section 5]).\n\n**5.3** Refunds are worked out under [file 01, Section 5] and [file 03].\n\n## 6. How the policy files are organised\n\n**6.1** Each file is named NN_topic.md. The number NN is also the last part of the doc_id (NC-POL-NN).\n\n**6.2** Each file starts with front matter holding doc_id, title, version, effective_date, last_updated and scope.\n\n**6.3** Rules are numbered by section and item. Section 3.2 of a file means item 3.2 under heading 3. Answers should cite the file name and the item number.\n\n**6.4** Cross-references are written as [file NN, Section X].",
+    "section_count": 6,
+    "item_count": 28,
+    "chunk_count": 29,
+    "injections_removed": 0
+  },
+  {
+    "file_name": "01_returns_policy.md",
+    "file_num": "01",
+    "sha256": "dcfb14da87e42f43e5993f87993c2b96da17eab04705ef408a911d51b9abfc02",
+    "metadata": {
+      "doc_id": "NC-POL-01",
+      "title": "Returns Policy",
+      "version": "3.0",
+      "effective_date": "2026-03-01",
+      "last_updated": "2026-02-20",
+      "scope": "general"
+    },
+    "raw_front_matter": "doc_id: NC-POL-01\ntitle: Returns Policy\nversion: 3.0\neffective_date: 2026-03-01\nlast_updated: 2026-02-20\nscope: general",
+    "clean_markdown": "# Returns Policy\n\n## 1. Who this policy covers\n\n**1.1** This policy covers items marked \"Sold by NovaCart\". Items sold by marketplace sellers follow the same windows and have extra rules in [file 18, Section 1].\n\n**1.2** To return an item, the customer opens My Orders, selects \"Return item\" and submits the request inside the return window in Section 2. NovaCart approves or declines the request within 1 business day.\n\n**1.3** An approved return must be handed to the courier within 5 days of approval. If it is not, the approval lapses and a new request is needed. The return window still applies to the new request.\n\n**1.4** NovaCart error means one of the following: the wrong item was delivered, the item is defective, or the item was damaged in transit, reported within the limits in [file 07, Section 1]. Every other return is a change-of-mind return.\n\n## 2. Return windows\n\n**2.1** Return windows count from the delivery date (see [file 00, Section 1]).\n\n| Category | Return window |\n| --- | --- |\n| Electronics | 7 days |\n| Clothing | 30 days |\n| Furniture/bulky | 14 days |\n| Personal care | 14 days, sealed items only |\n| Grocery/perishables | Not returnable for change of mind (see [file 04, Section 1]) |\n\n**2.2** Remote areas and International orders have their own return windows (see [file 19, Section 4] and [file 20, Section 6]).\n\n**2.3** When the window has passed, change-of-mind returns are not accepted. A defective electronics or furniture item can still be handled under warranty (see [file 08, Section 4]).\n\n**2.4** Items that cannot be returned for change of mind are listed in [file 04, Section 1].\n\n## 3. Condition of returned items\n\n**3.1** Electronics must come back in the original packaging with all accessories. If an electronics item has been opened and is not defective, a restocking fee of 15% of the paid price applies. A sealed electronics item has no restocking fee.\n\n**3.2** Clothing must be unworn and unwashed with the tags attached. There is no restocking fee for clothing.\n\n**3.3** Furniture/bulky items must be unused and in the original packaging. A restocking fee of 10% of the paid price applies to non-defective furniture/bulky items.\n\n**3.4** Personal care items must be sealed and unopened. There is no restocking fee for personal care.\n\n**3.5** No restocking fee is charged on a NovaCart error return.\n\n## 4. Return fees\n\n**4.1** One return fee is charged per return request, not per item. If the request includes any furniture/bulky item, the fee is the pickup fee of Rs. 2,000. Otherwise the fee is the return label fee of Rs. 200.\n\n**4.2** No return fee is charged on a NovaCart error return.\n\n**4.3** Remote areas pay a return label fee of Rs. 400 (see [file 19, Section 4]). International customers arrange and pay their own return shipping (see [file 20, Section 6]).\n\n## 5. How the refund amount is worked out\n\n**5.1** The paid price of an item is its selling price minus its share of any code discount (see [file 12, Section 6]), or its share of the bundle price if it was bought in a bundle (see [file 13, Section 4]).\n\n**5.2** The refund for each returned item is its paid price minus any restocking fee. The restocking fee is a percentage of the paid price, rounded half up.\n\n**5.3** The refund total for a return request is the sum of the item refunds minus the one return fee from Section 4. The refund total is never below Rs. 0.\n\n**5.4** Shipping fees and other fees paid at checkout are handled in [file 03, Section 2]. Refund method and timing are in [file 03, Section 3].\n\n## 6. Other return rules\n\n**6.1** NovaCart does not offer direct exchanges. The customer returns the item and places a new order.\n\n**6.2** Returned items are inspected within 2 business days of NovaCart receiving them. The refund approval date is the day the inspection is completed.\n\n**6.3** A return request can cover some or all of the items in an order.",
+    "section_count": 6,
+    "item_count": 23,
+    "chunk_count": 23,
+    "injections_removed": 0
+  },
+  {
+    "file_name": "02_returns_policy_2025.md",
+    "file_num": "02",
+    "sha256": "9b9fc35e7a2421a62da5cacefbae2f649032e292fca0fe8e0e641cdfe0300858",
+    "metadata": {
+      "doc_id": "NC-POL-02",
+      "title": "Returns Policy (Version 2)",
+      "version": "2.0",
+      "effective_date": "2025-06-01",
+      "last_updated": "2025-05-20",
+      "scope": "general"
+    },
+    "raw_front_matter": "doc_id: NC-POL-02\ntitle: Returns Policy (Version 2)\nversion: 2.0\neffective_date: 2025-06-01\nlast_updated: 2025-05-20\nscope: general",
+    "clean_markdown": "# Returns Policy (Version 2)\n\n## 1. Who this policy covers\n\n**1.1** This policy covers items marked \"Sold by NovaCart\".\n\n**1.2** To return an item, the customer opens My Orders, selects \"Return item\" and submits the request inside the return window in Section 2. NovaCart approves or declines the request within 1 business day.\n\n**1.3** An approved return must be handed to the courier within 5 days of approval. If it is not, the approval lapses and a new request is needed.\n\n**1.4** NovaCart error means one of the following: the wrong item was delivered, the item is defective, or the item was damaged in transit. Every other return is a change-of-mind return.\n\n## 2. Return windows\n\n**2.1** Return windows count from the delivery date.\n\n| Category | Return window |\n| --- | --- |\n| Electronics | 10 days |\n| Clothing | 14 days |\n| Furniture/bulky | 14 days |\n| Personal care | 14 days, sealed items only |\n| Grocery/perishables | Not returnable for change of mind |\n\n**2.2** When the window has passed, change-of-mind returns are not accepted.\n\n## 3. Condition of returned items\n\n**3.1** Electronics must come back in the original packaging with all accessories. If an electronics item has been opened and is not defective, a restocking fee of 10% of the paid price applies. A sealed electronics item has no restocking fee.\n\n**3.2** Clothing must be unworn and unwashed with the tags attached. There is no restocking fee for clothing.\n\n**3.3** Furniture/bulky items must be unused and in the original packaging. A restocking fee of 10% of the paid price applies to non-defective furniture/bulky items.\n\n**3.4** Personal care items must be sealed and unopened. There is no restocking fee for personal care.\n\n**3.5** No restocking fee is charged on a NovaCart error return.\n\n## 4. Return fees\n\n**4.1** One return fee is charged per return request, not per item. If the request includes any furniture/bulky item, the fee is the pickup fee of Rs. 1,500. Otherwise the fee is the return label fee of Rs. 150.\n\n**4.2** No return fee is charged on a NovaCart error return.\n\n## 5. How the refund amount is worked out\n\n**5.1** The paid price of an item is the amount the customer paid for it after any discount.\n\n**5.2** The refund for each returned item is its paid price minus any restocking fee, rounded half up.\n\n**5.3** The refund total for a return request is the sum of the item refunds minus the one return fee. The refund total is never below Rs. 0.\n\n**5.4** Refunds go back to the original payment method.",
+    "section_count": 5,
+    "item_count": 17,
+    "chunk_count": 17,
+    "injections_removed": 0
+  },
+  {
+    "file_name": "03_refunds_policy.md",
+    "file_num": "03",
+    "sha256": "61551362fd2ec2e8d3dd4959baf50cef087a21e9906cc4a11e43c873ac8b7b74",
+    "metadata": {
+      "doc_id": "NC-POL-03",
+      "title": "Refunds Policy",
+      "version": "2.0",
+      "effective_date": "2026-03-01",
+      "last_updated": "2026-02-20",
+      "scope": "general"
+    },
+    "raw_front_matter": "doc_id: NC-POL-03\ntitle: Refunds Policy\nversion: 2.0\neffective_date: 2026-03-01\nlast_updated: 2026-02-20\nscope: general",
+    "clean_markdown": "# Refunds Policy\n\n## 1. Refund basics\n\n**1.1** A refund is the money returned to the customer after an approved return, an approved cancellation, a lost parcel or an approved defect or damage report. How the item refund is worked out is set out in [file 01, Section 5].\n\n**1.2** The refund approval date is the day the returned item passes inspection (see [file 01, Section 6]). For a cancellation before dispatch it is the day of the cancellation. For a lost parcel it is the day the loss is confirmed (see [file 07, Section 2]).\n\n## 2. Which fees are refunded\n\n**2.1** Standard shipping fee. It is refunded only when (a) the whole order is cancelled before dispatch, (b) every item in the order is returned because of a NovaCart error, or (c) the parcel is lost. In every other case it is not refunded, including partial returns and change-of-mind returns.\n\n**2.2** Express fee. It follows the same three conditions as the standard shipping fee. It is also refunded as store credit when express delivery is late (see [file 05, Section 2.4]).\n\n**2.3** Bulky surcharge. It is refunded for a bulky item when that item is returned because of a NovaCart error, when the order is cancelled before dispatch, or when the parcel is lost.\n\n**2.4** COD fee. It follows the same three conditions as the standard shipping fee.\n\n**2.5** Return label fee and pickup fee are deducted from refunds as set out in [file 01, Section 4].\n\n## 3. Refund method and timing\n\n**3.1** A refund goes back to the original payment method, except for COD orders (see 3.3).\n\n**3.2** The processing time starts on the refund approval date and is counted in business days.\n\n| Original payment method | Processing time |\n| --- | --- |\n| Debit or credit card | 7 business days |\n| Online banking | 5 business days |\n| Wallet (JazzCash or Easypaisa) | 2 business days |\n| Store credit | Instant |\n\n**3.3** COD orders are never refunded in cash. The customer chooses a bank transfer (5 business days) or store credit (instant).\n\n**3.4** A customer can choose store credit instead of the original method and receive a bonus (see [file 14, Section 3]).\n\n**3.5** Orders paid partly with store credit are refunded under [file 14, Section 6].\n\n**3.6** Marketplace items have a different approval step (see [file 18, Section 2]).\n\n## 4. Cancellations\n\n**4.1** An order that has not been dispatched can be cancelled from the account. The customer receives a full refund including every fee, on the timing in 3.2 counted from the cancellation date.\n\n**4.2** An order that has been dispatched cannot be cancelled. The customer can return it after delivery under [file 01].\n\n## 5. Worked example (illustration only)\n\n**5.1** Metro order, paid by card. Shirt Rs. 2,400 and trousers Rs. 3,600, both clothing, code STYLE15 applied.\n\n- Eligible subtotal: 2,400 + 3,600 = Rs. 6,000, above the Rs. 4,000 minimum.\n- Discount: 15% of 6,000 = Rs. 900, below the Rs. 1,500 cap.\n- Shares of the discount: shirt 900 x 2,400 / 6,000 = Rs. 360, trousers 900 x 3,600 / 6,000 = Rs. 540.\n- Paid prices: shirt 2,400 - 360 = Rs. 2,040, trousers 3,600 - 540 = Rs. 3,060.\n- Subtotal after discount: Rs. 5,100, at least the Metro threshold of Rs. 5,000, so standard shipping is free.\n- The customer returns the shirt for change of mind inside the window: refund = 2,040 - 200 (return label fee) = Rs. 1,840. No restocking fee applies to clothing.",
+    "section_count": 5,
+    "item_count": 16,
+    "chunk_count": 16,
+    "injections_removed": 1
+  },
+  {
+    "file_name": "04_non_returnable_items.md",
+    "file_num": "04",
+    "sha256": "ce314ca784bb2e817bf5b0c402e1c84aed8de219d8e4a0dec47f700367506833",
+    "metadata": {
+      "doc_id": "NC-POL-04",
+      "title": "Non-Returnable Items",
+      "version": "2.0",
+      "effective_date": "2026-03-01",
+      "last_updated": "2026-02-20",
+      "scope": "general"
+    },
+    "raw_front_matter": "doc_id: NC-POL-04\ntitle: Non-Returnable Items\nversion: 2.0\neffective_date: 2026-03-01\nlast_updated: 2026-02-20\nscope: general",
+    "clean_markdown": "# Non-Returnable Items\n\n## 1. Items that cannot be returned for change of mind\n\n**1.1** Grocery/perishables. Every item in this category is non-returnable for change of mind.\n\n**1.2** Opened personal care items. A personal care item whose seal has been broken cannot be returned. A sealed personal care item can be returned within 14 days (see [file 01, Section 2]).\n\n**1.3** Innerwear and swimwear. These clothing items cannot be returned once the hygiene seal has been removed. With the seal intact they follow the normal clothing window.\n\n## 2. Items that cannot be returned because of how they were sold\n\n**2.1** Items marked \"Final Sale\" at the time of purchase cannot be returned for change of mind. Warranty still applies where the category has warranty (see [file 08, Section 2]).\n\n**2.2** Furniture/bulky items marked \"Custom\" or made to order cannot be returned for change of mind.\n\n## 3. Exceptions\n\n**3.1** Any item can be returned in any category, including the items in Sections 1 and 2, if it is a NovaCart error and it is reported inside the limits in [file 07, Section 1].\n\n**3.2** The return fees and restocking fees in [file 01] do not apply to returns under 3.1.\n\n## 4. Marketplace items\n\n**4.1** Marketplace sellers must follow the same list of non-returnable items (see [file 18, Section 1]).",
+    "section_count": 4,
+    "item_count": 8,
+    "chunk_count": 8,
+    "injections_removed": 0
+  },
+  {
+    "file_name": "05_shipping_policy.md",
+    "file_num": "05",
+    "sha256": "390dd862a6ff982230633302bb6001c35f461d0e213f30d3a4ff89a18c37ed97",
+    "metadata": {
+      "doc_id": "NC-POL-05",
+      "title": "Shipping Policy",
+      "version": "2.0",
+      "effective_date": "2026-01-15",
+      "last_updated": "2026-01-05",
+      "scope": "general"
+    },
+    "raw_front_matter": "doc_id: NC-POL-05\ntitle: Shipping Policy\nversion: 2.0\neffective_date: 2026-01-15\nlast_updated: 2026-01-05\nscope: general",
+    "clean_markdown": "# Shipping Policy\n\n## 1. Scope and dispatch\n\n**1.1** This policy covers orders Sold by NovaCart. Marketplace orders have their own dispatch rules in [file 17, Section 3].\n\n**1.2** NovaCart dispatches an order within 1 business day of payment confirmation. For COD orders the 1 business day starts when the order is verified (see [file 11, Section 3]).\n\n## 2. Delivery times and delivery options\n\n**2.1** Delivery times count in business days from dispatch.\n\n| Destination or option | Delivery time after dispatch |\n| --- | --- |\n| Metro cities, standard | 2 to 4 business days |\n| Metro cities, express | 1 to 2 business days |\n| Rest of Pakistan, standard | 4 to 6 business days |\n| Bulky items (Metro cities and Rest of Pakistan) | 5 to 8 business days |\n| Grocery (Metro cities only) | 1 to 2 business days |\n| Remote areas | see [file 19, Section 3] |\n| International | see [file 20, Section 4] |\n\n**2.2** Express delivery is available in Metro cities only. It cannot be chosen if the order contains a bulky item. The express fee is in [file 06, Section 2].\n\n**2.3** Bulky items are delivered only to Metro cities and Rest of Pakistan. Someone must be present to receive them.\n\n**2.4** If an express order is delivered more than 2 business days after dispatch, the express fee is refunded as store credit.\n\n**2.5** Grocery/perishables are delivered to Metro cities only. An order containing grocery can only be placed with a Metro city address.\n\n## 3. Tracking and address changes\n\n**3.1** A tracking number is emailed when the order is dispatched.\n\n**3.2** The delivery address can be changed only before dispatch. It cannot be changed after dispatch.\n\n## 4. Failed deliveries\n\n**4.1** The courier makes 3 delivery attempts. After the third failed attempt the order is returned to NovaCart.\n\n**4.2** A prepaid order whose delivery failed is refunded for the merchandise only. Shipping, express, bulky and COD fees are kept. COD orders are cancelled (see [file 11, Section 4]).\n\n## 5. Parcels\n\n**5.1** An order may be split into several parcels that arrive on different days. No extra shipping fee is charged for split parcels.",
+    "section_count": 5,
+    "item_count": 12,
+    "chunk_count": 12,
+    "injections_removed": 0
+  },
+  {
+    "file_name": "06_shipping_fees_and_free_shipping.md",
+    "file_num": "06",
+    "sha256": "f060fd7737ad8173903822912c22ca52fbc732a9e58680f1b3048cc301218414",
+    "metadata": {
+      "doc_id": "NC-POL-06",
+      "title": "Shipping Fees and Free Shipping",
+      "version": "2.0",
+      "effective_date": "2026-01-15",
+      "last_updated": "2026-01-05",
+      "scope": "general"
+    },
+    "raw_front_matter": "doc_id: NC-POL-06\ntitle: Shipping Fees and Free Shipping\nversion: 2.0\neffective_date: 2026-01-15\nlast_updated: 2026-01-05\nscope: general",
+    "clean_markdown": "# Shipping Fees and Free Shipping\n\n## 1. Fee schedule\n\n**1.1** The standard shipping fee depends on the destination.\n\n| Destination | Standard fee (per order) | Standard fee is free when the subtotal after discount is at least |\n| --- | --- | --- |\n| Metro cities | Rs. 250 | Rs. 5,000 |\n| Rest of Pakistan | Rs. 350 | Rs. 7,500 |\n| Remote areas | see [file 19, Section 2] | see [file 19, Section 2] |\n| International | see [file 20, Section 4] | not available |\n\n**1.2** The express fee is a flat Rs. 500 (Metro cities only).\n\n**1.3** The bulky surcharge is Rs. 1,500 per bulky item in Metro cities and Rs. 2,500 per bulky item in Rest of Pakistan.\n\n## 2. How the fees are applied\n\n**2.1** One standard shipping fee is charged per order, however many items or parcels it has.\n\n**2.2** The free-shipping threshold is compared with the subtotal after discount (see [file 00, Section 5]). That subtotal is taken before shipping, express, bulky and COD charges. Items in a bundle count at their bundle price.\n\n**2.3** Express replaces the standard fee. The express fee of Rs. 500 is charged in full even when the order is above the free-shipping threshold, and the FREESHIP code does not remove it.\n\n**2.4** The bulky surcharge is charged for each bulky item in addition to the standard fee. It is never waived by the threshold or by FREESHIP and it does not count toward the threshold.\n\n**2.5** Grocery/perishables use the standard fee, and the grocery subtotal counts toward the threshold.\n\n**2.6** Which fees are refunded on returns, cancellations and lost parcels is set out in [file 03, Section 2].\n\n## 3. Worked example (illustration only)\n\n**3.1** Metro order. Headphones Rs. 3,200 (electronics) and a shirt Rs. 2,000 (clothing), code WELCOME10 applied.\n\n- Merchandise subtotal: Rs. 5,200.\n- Discount: 10% of 5,200 = Rs. 520, below the Rs. 1,000 cap.\n- Subtotal after discount: Rs. 4,680, below the Metro threshold of Rs. 5,000.\n- Standard shipping fee: Rs. 250.\n- Total payable: 4,680 + 250 = Rs. 4,930.",
+    "section_count": 3,
+    "item_count": 10,
+    "chunk_count": 10,
+    "injections_removed": 1
+  },
+  {
+    "file_name": "07_lost_or_damaged_deliveries.md",
+    "file_num": "07",
+    "sha256": "3d2145cd65c8ad17de260313af87fdaee2c0cab48af4fdae4c36f552aba9dae4",
+    "metadata": {
+      "doc_id": "NC-POL-07",
+      "title": "Lost, Damaged and Wrong Deliveries",
+      "version": "2.0",
+      "effective_date": "2026-01-15",
+      "last_updated": "2026-01-05",
+      "scope": "general"
+    },
+    "raw_front_matter": "doc_id: NC-POL-07\ntitle: Lost, Damaged and Wrong Deliveries\nversion: 2.0\neffective_date: 2026-01-15\nlast_updated: 2026-01-05\nscope: general",
+    "clean_markdown": "# Lost, Damaged and Wrong Deliveries\n\n## 1. Damaged, wrong and defective items\n\n**1.1** Damaged in transit. The customer must report it within 48 hours of delivery, with photos. For grocery/perishables the limit is 24 hours.\n\n**1.2** Wrong item delivered. The same limits as 1.1 apply.\n\n**1.3** Defective item. The customer must report it inside the category return window (electronics 7 days, furniture/bulky 14 days, clothing 30 days, personal care 14 days, grocery/perishables 24 hours). After the window, electronics and furniture/bulky are handled under warranty (see [file 08, Section 4]).\n\n**1.4** For a valid report the customer chooses a replacement or a full refund of the paid price. No restocking fee and no return fee is charged, and collection is free.\n\n**1.5** Whether shipping fees are refunded is set out in [file 03, Section 2].\n\n## 2. Lost parcels\n\n**2.1** A parcel is lost if it has not been delivered 10 business days after dispatch (Metro cities and Rest of Pakistan). Remote areas and International have longer limits (see [file 19, Section 3] and [file 20, Section 4]).\n\n**2.2** For a lost parcel the customer chooses a reshipment, if the item is in stock, or a full refund including every fee (standard shipping, express, bulky and COD).\n\n**2.3** The refund timing in [file 03, Section 3] starts on the day the loss is confirmed. No inspection step applies.\n\n## 3. Parcels marked delivered but not received\n\n**3.1** The customer must report it within 3 days of the \"delivered\" status. NovaCart investigates for up to 5 business days. If the parcel is not found it is treated as lost under Section 2.",
+    "section_count": 3,
+    "item_count": 9,
+    "chunk_count": 9,
+    "injections_removed": 0
+  },
+  {
+    "file_name": "08_warranty_policy.md",
+    "file_num": "08",
+    "sha256": "09c705846822ce8b07027c6a7219a09b8009af1ad303b5e24480e1a9d5c8d9fa",
+    "metadata": {
+      "doc_id": "NC-POL-08",
+      "title": "Warranty Policy",
+      "version": "2.0",
+      "effective_date": "2026-01-15",
+      "last_updated": "2026-01-05",
+      "scope": "general"
+    },
+    "raw_front_matter": "doc_id: NC-POL-08\ntitle: Warranty Policy\nversion: 2.0\neffective_date: 2026-01-15\nlast_updated: 2026-01-05\nscope: general",
+    "clean_markdown": "# Warranty Policy\n\n## 1. Scope\n\n**1.1** This policy covers items Sold by NovaCart. Marketplace items have warranty from the seller (see [file 18, Section 4]).\n\n## 2. Warranty periods\n\n**2.1** Warranty periods count from the delivery date.\n\n| Item | Warranty period |\n| --- | --- |\n| Electronics | 12 months |\n| Chargers, cables and other accessories sold separately | 6 months |\n| Furniture/bulky | 24 months, structural defects only |\n| Clothing, personal care, grocery/perishables | No warranty |\n\n**2.2** An accessory that comes in the box with a device has the same warranty as the device.\n\n## 3. What is covered\n\n**3.1** Warranty covers manufacturing defects that appear during normal use.\n\n**3.2** Warranty does not cover physical damage, liquid damage, repairs by anyone other than NovaCart, normal wear, or cosmetic scratches.\n\n## 4. Remedies\n\n**4.1** NovaCart first tries to repair the item. A repair is completed within 14 calendar days of NovaCart receiving the item (see [file 09, Section 3]).\n\n**4.2** If the item cannot be repaired, NovaCart replaces it with the same or an equivalent model.\n\n**4.3** If no replacement is available, NovaCart refunds the paid price reduced by one equal part for each full month since delivery. The refund is the paid price multiplied by (W minus m) and divided by W, rounded half up, where W is the warranty period in months (12 for electronics, 6 for accessories, 24 for furniture/bulky) and m is the number of full months from the delivery date to the claim date (see [file 00, Section 1]).\n\n**4.4** A replacement item keeps the remaining warranty of the original item. It does not start a new warranty period.\n\n**4.5** An item is repaired at most 2 times. After a third defect of the same kind NovaCart replaces the item or refunds it under 4.3.\n\n## 5. Defects inside the return window\n\n**5.1** A defect reported inside the return window is a NovaCart error return and follows [file 01] and [file 07], not Section 4 of this file.\n\n## 6. Worked example (illustration only)\n\n**6.1** An electronics item with a paid price of Rs. 24,000 was delivered on 2026-01-10. The customer files a claim on 2026-04-12, and no repair or replacement is possible. Full months elapsed: 3. Refund = 24,000 x (12 - 3) / 12 = Rs. 18,000.",
+    "section_count": 6,
+    "item_count": 12,
+    "chunk_count": 12,
+    "injections_removed": 0
+  },
+  {
+    "file_name": "09_warranty_claims.md",
+    "file_num": "09",
+    "sha256": "92df7b449b85017b5b636eca09f9695eccbed6ae149df98147c26a16a1b2ffcb",
+    "metadata": {
+      "doc_id": "NC-POL-09",
+      "title": "How to Make a Warranty Claim",
+      "version": "2.0",
+      "effective_date": "2026-01-15",
+      "last_updated": "2026-01-05",
+      "scope": "general"
+    },
+    "raw_front_matter": "doc_id: NC-POL-09\ntitle: How to Make a Warranty Claim\nversion: 2.0\neffective_date: 2026-01-15\nlast_updated: 2026-01-05\nscope: general",
+    "clean_markdown": "# How to Make a Warranty Claim\n\n## 1. Making a claim\n\n**1.1** The customer opens the warranty portal and submits the order number, a description of the defect and photos.\n\n**1.2** NovaCart decides whether the claim is accepted within 3 business days of receiving the claim.\n\n## 2. Collection and costs\n\n**2.1** For an accepted claim NovaCart arranges courier collection and return of the item at no cost to the customer.\n\n**2.2** If the claim is rejected because the defect is not covered (see [file 08, Section 3]), the customer pays an inspection and return fee of Rs. 400 before the item is sent back.\n\n## 3. Repair time\n\n**3.1** NovaCart completes a repair within 14 calendar days of receiving the item. If it takes longer, the customer can ask for a replacement instead.\n\n## 4. Customer responsibilities\n\n**4.1** The customer is responsible for backing up and removing personal data from a device before sending it. NovaCart is not responsible for data lost during repair.\n\n## 5. Appeals\n\n**5.1** A rejected claim can be appealed within 7 days of the decision. NovaCart answers the appeal within 5 business days.",
+    "section_count": 5,
+    "item_count": 7,
+    "chunk_count": 7,
+    "injections_removed": 0
+  },
+  {
+    "file_name": "10_payments.md",
+    "file_num": "10",
+    "sha256": "37d5e8f52c0c06af48f4b53c6bd0ea07580cab9f8b3663abf421925b98b712b1",
+    "metadata": {
+      "doc_id": "NC-POL-10",
+      "title": "Payments",
+      "version": "2.0",
+      "effective_date": "2026-05-01",
+      "last_updated": "2026-04-20",
+      "scope": "general"
+    },
+    "raw_front_matter": "doc_id: NC-POL-10\ntitle: Payments\nversion: 2.0\neffective_date: 2026-05-01\nlast_updated: 2026-04-20\nscope: general",
+    "clean_markdown": "# Payments\n\n## 1. Accepted payment methods\n\n**1.1** For delivery inside Pakistan NovaCart accepts debit and credit cards (Visa and Mastercard), online banking, wallets (JazzCash and Easypaisa), cash on delivery (see [file 11]) and store credit (see [file 14]).\n\n**1.2** International orders can be paid by card only (see [file 20, Section 5]).\n\n## 2. Security\n\n**2.1** Card payments above Rs. 20,000 need 3-D Secure verification.\n\n**2.2** NovaCart does not store full card numbers. Card details are held by the payment processor.\n\n## 3. Order limits\n\n**3.1** The maximum total payable for a card, online banking or wallet order is Rs. 250,000.\n\n**3.2** The maximum total payable for a cash on delivery order is Rs. 40,000.\n\n## 4. When payment is taken\n\n**4.1** Card, online banking and wallet payments are taken at checkout. Cash on delivery is paid to the courier at delivery.\n\n## 5. Currency and receipts\n\n**5.1** All payments are charged in PKR. If a card is issued in another currency, the card issuer sets the exchange rate and any conversion fee. NovaCart does not refund conversion fees.\n\n**5.2** An email invoice is sent within 1 business day of payment confirmation.",
+    "section_count": 5,
+    "item_count": 9,
+    "chunk_count": 9,
+    "injections_removed": 0
+  },
+  {
+    "file_name": "11_cod_and_failed_payments.md",
+    "file_num": "11",
+    "sha256": "8815fc29f28d6bd2e842abb84b91d693c50453f0e1f79a8de4c8ae9b068e6466",
+    "metadata": {
+      "doc_id": "NC-POL-11",
+      "title": "Cash on Delivery and Failed Payments",
+      "version": "2.0",
+      "effective_date": "2026-05-01",
+      "last_updated": "2026-04-20",
+      "scope": "general"
+    },
+    "raw_front_matter": "doc_id: NC-POL-11\ntitle: Cash on Delivery and Failed Payments\nversion: 2.0\neffective_date: 2026-05-01\nlast_updated: 2026-04-20\nscope: general",
+    "clean_markdown": "# Cash on Delivery and Failed Payments\n\n## 1. Cash on delivery availability\n\n**1.1** Cash on delivery (COD) is available for Metro cities and Rest of Pakistan. It is not available for Remote areas or International orders.\n\n**1.2** The maximum total payable for a COD order is Rs. 50,000.\n\n## 2. COD fee\n\n**2.1** A COD fee of Rs. 100 is added to each COD order (see [file 00, Section 5]). Whether the fee is refunded is set out in [file 03, Section 2].\n\n## 3. COD verification\n\n**3.1** A COD order with a total payable above Rs. 20,000 is verified by phone. If the customer does not confirm within 24 hours of placing the order, the order is cancelled.\n\n## 4. Refused or failed COD deliveries\n\n**4.1** If delivery fails 3 times, or the customer refuses the parcel, the COD order is cancelled.\n\n**4.2** A second failed or refused COD delivery within 12 months limits the account to prepaid payment methods for 90 days.\n\n## 5. Failed online payments\n\n**5.1** An order with a failed online payment is held for 24 hours and then cancelled automatically.\n\n**5.2** If money was taken but no order was confirmed, or a customer was charged twice, the amount is reversed in the same number of business days as the refund times in [file 03, Section 3]: 7 for cards, 5 for online banking and 2 for wallets.\n\n## 6. COD refunds\n\n**6.1** COD refunds follow [file 03, Section 3].",
+    "section_count": 6,
+    "item_count": 9,
+    "chunk_count": 9,
+    "injections_removed": 0
+  },
+  {
+    "file_name": "12_promo_code_rules.md",
+    "file_num": "12",
+    "sha256": "a13b33a11b5c5d804ccdeb15b84f4f486db08dbe73a76329b72506428797f3e3",
+    "metadata": {
+      "doc_id": "NC-POL-12",
+      "title": "Promo Code Rules",
+      "version": "2.0",
+      "effective_date": "2026-06-01",
+      "last_updated": "2026-05-22",
+      "scope": "general"
+    },
+    "raw_front_matter": "doc_id: NC-POL-12\ntitle: Promo Code Rules\nversion: 2.0\neffective_date: 2026-06-01\nlast_updated: 2026-05-22\nscope: general",
+    "clean_markdown": "# Promo Code Rules\n\n## 1. General rules\n\n**1.1** A code is entered at checkout. It cannot be added to an order after the order is placed.\n\n**1.2** Only one discount code can be used per order. FREESHIP is a shipping code, not a discount code, so it can be used together with one discount code.\n\n**1.3** A code is valid if the order was placed on or before the code's last order date (inclusive) and the order meets the code's conditions.\n\n**1.4** Codes can be used on items that are on sale. The discount is calculated on the sale price.\n\n**1.5** A discount code applies to every item in the order that meets the code's category condition, including items that are part of a bundle deal.\n\n**1.6** A code is used up when the order is placed. It is not given back, except when the whole order is cancelled before dispatch, when the code is restored.\n\n## 2. Codes\n\n**2.1** The codes below are the only codes in force.\n\n| Code | Benefit | Eligible items | Minimum eligible subtotal | Maximum discount | Last order date |\n| --- | --- | --- | --- | --- | --- |\n| WELCOME10 | 10% off | All categories except grocery/perishables | Rs. 3,000 | Rs. 1,000 | 2026-12-31 |\n| STYLE15 | 15% off | Clothing only | Rs. 4,000 | Rs. 1,500 | 2026-08-31 |\n| TECH500 | Rs. 500 off | Electronics only | Rs. 15,000 | Rs. 500 | 2027-01-31 |\n| FREESHIP | Removes the standard shipping fee | Whole order | Rs. 2,000 | Not applicable | 2026-12-31 |\n\n**2.2** WELCOME10 can be used on a customer's first order only.\n\n**2.3** TECH500 can be used once per customer per calendar month.\n\n## 3. Eligible subtotal and discount\n\n**3.1** The eligible subtotal is the sum of the selling prices (after any sale price) of the items that are eligible for the code.\n\n**3.2** For a percentage code the discount is the eligible subtotal multiplied by the rate, rounded half up, and then limited to the maximum discount.\n\n**3.3** For TECH500 the discount is Rs. 500. A discount is never more than the eligible subtotal.\n\n**3.4** The minimum is checked against the eligible subtotal at checkout, before the discount. A later return does not remove the discount from the remaining items.\n\n## 4. Exclusions\n\n**4.1** Codes do not apply to items sold by marketplace sellers.\n\n**4.2** Codes do not apply to items marked \"Final Sale\".\n\n**4.3** WELCOME10 does not apply to grocery/perishables.\n\n## 5. The FREESHIP code\n\n**5.1** FREESHIP removes the standard shipping fee. It does not remove the express fee, the bulky surcharge or the COD fee.\n\n**5.2** FREESHIP is valid for orders to Metro cities and Rest of Pakistan only. It is not valid for Remote areas or International orders.\n\n**5.3** The minimum Rs. 2,000 is checked against the merchandise subtotal after any other discount code.\n\n## 6. Splitting a code discount across items\n\n**6.1** To work out a refund for one item, the discount is split across the eligible items in proportion to their selling prices. Each item's share is the discount multiplied by the item's price and divided by the eligible subtotal, rounded half up.\n\n**6.2** If the rounded shares do not add up to the discount, the difference is added to or taken from the most expensive eligible item. If two items have the same price, the one listed first in the order is used.\n\n**6.3** The paid price of an item is its selling price minus its share of the discount (see [file 01, Section 5]).\n\n**6.4** Worked example (illustration only). TECH500 is used on three electronics items priced Rs. 5,000, Rs. 5,000 and Rs. 5,500. The eligible subtotal is Rs. 15,500, above the Rs. 15,000 minimum. The shares are 161, 161 and 177, which add up to 499. The missing rupee goes to the Rs. 5,500 item, so the shares are 161, 161 and 178.",
+    "section_count": 6,
+    "item_count": 23,
+    "chunk_count": 23,
+    "injections_removed": 1
+  },
+  {
+    "file_name": "13_sales_and_bundles.md",
+    "file_num": "13",
+    "sha256": "4ac174bfd619564e5cf95ce93684e149f7500545bf5bbd71cc682adb6d863596",
+    "metadata": {
+      "doc_id": "NC-POL-13",
+      "title": "Sales and Bundle Deals",
+      "version": "2.0",
+      "effective_date": "2026-06-01",
+      "last_updated": "2026-05-22",
+      "scope": "specific"
+    },
+    "raw_front_matter": "doc_id: NC-POL-13\ntitle: Sales and Bundle Deals\nversion: 2.0\neffective_date: 2026-06-01\nlast_updated: 2026-05-22\nscope: specific",
+    "clean_markdown": "# Sales and Bundle Deals\n\n## 1. Sale prices\n\n**1.1** A sale price already includes the reduction. The sale price is the item's selling price at checkout and in refunds.\n\n**1.2** A sale price counts as the item price in step 1 of [file 00, Section 5].\n\n## 2. Flash sales and Final Sale\n\n**2.1** A flash sale lasts up to 24 hours. Each customer can buy at most 2 units of a flash sale item.\n\n**2.2** Flash sale items can be returned under the normal rules unless they are marked \"Final Sale\".\n\n**2.3** Items marked \"Final Sale\" cannot be returned for change of mind (see [file 04, Section 2]). Warranty still applies where the category has warranty.\n\n## 3. Price changes\n\n**3.1** If an item's price drops after the customer has bought it, NovaCart does not refund the difference.\n\n## 4. Bundle deals\n\n**4.1** A bundle deal is a set of items sold together for one bundle price. Each item in the bundle has a list price shown on the bundle page.\n\n**4.2** Bundle deals cannot be combined with discount codes. Items in a bundle are not eligible for any discount code and do not count toward an eligible subtotal.\n\n**4.3** The bundle price counts toward the merchandise subtotal and toward free-shipping thresholds.\n\n**4.4** If one item of a bundle is returned, its share of the bundle price is the bundle price multiplied by the item's list price and divided by the sum of the list prices of all items in the bundle, rounded half up. If the shares do not add up to the bundle price, the difference goes to the item with the highest list price (the first listed if two are equal).\n\n**4.5** If every item of a bundle is returned, the refund is the full bundle price, before any fees.\n\n**4.6** Each item in a bundle follows the return window and the condition rules of its own category.\n\n**4.7** Worked example (illustration only). A starter bundle costs Rs. 3,333 and contains earphones (list price Rs. 2,500), a charger (list price Rs. 1,000) and a cable (list price Rs. 500). The list prices add up to Rs. 4,000. The shares are earphones 2,083, charger 833 and cable 417, which add up to 3,333.",
+    "section_count": 4,
+    "item_count": 13,
+    "chunk_count": 13,
+    "injections_removed": 0
+  },
+  {
+    "file_name": "14_store_credit.md",
+    "file_num": "14",
+    "sha256": "f39385e231bcdb6598399816136d21a3d773535b80da3c00af5b42a86e7ae4ff",
+    "metadata": {
+      "doc_id": "NC-POL-14",
+      "title": "Store Credit",
+      "version": "2.0",
+      "effective_date": "2026-03-01",
+      "last_updated": "2026-02-20",
+      "scope": "general"
+    },
+    "raw_front_matter": "doc_id: NC-POL-14\ntitle: Store Credit\nversion: 2.0\neffective_date: 2026-03-01\nlast_updated: 2026-02-20\nscope: general",
+    "clean_markdown": "# Store Credit\n\n## 1. What store credit is\n\n**1.1** Store credit is a balance held on the customer's NovaCart account. Rs. 1 of credit is worth Rs. 1.\n\n## 2. How credit is issued\n\n**2.1** Credit is issued when a customer chooses store credit for a refund, when NovaCart refunds a late express fee (see [file 05, Section 2.4]) and when NovaCart gives goodwill credit.\n\n## 3. Store credit bonus\n\n**3.1** A customer who chooses store credit instead of a refund to the original payment method receives a bonus of 5% of the refund amount, rounded half up, up to a maximum of Rs. 1,000 per refund.\n\n**3.2** There is no bonus on credit that can only be issued as store credit, such as a late express fee refund or the part of an order that was paid with store credit.\n\n**3.3** The bonus expires together with the credit it was issued with.\n\n## 4. Expiry\n\n**4.1** Credit expires 12 months after the day it is issued, on the same calendar date. Unused credit is lost on expiry and the expiry date cannot be extended.\n\n## 5. Using store credit\n\n**5.1** Credit can be used at checkout for all or part of an order, together with other payment methods.\n\n**5.2** Credit cannot be used to buy items from marketplace sellers (see [file 17, Section 6]).\n\n**5.3** Credit cannot be withdrawn as cash and cannot be transferred to another account.\n\n## 6. Orders paid partly with store credit\n\n**6.1** A refund for an order paid partly with store credit goes first to the other payment method, up to the amount that method paid. Any remainder is refunded to store credit.\n\n**6.2** Worked example (illustration only). A customer chooses store credit for a refund of Rs. 8,000. The bonus is 5% of 8,000 = Rs. 400, so Rs. 8,400 of credit is issued.",
+    "section_count": 6,
+    "item_count": 11,
+    "chunk_count": 11,
+    "injections_removed": 0
+  },
+  {
+    "file_name": "15_privacy_policy.md",
+    "file_num": "15",
+    "sha256": "572fe36ca886dbdbb47fde8be2ce7a129c3ceff6a0edac58af3000007af25d75",
+    "metadata": {
+      "doc_id": "NC-POL-15",
+      "title": "Privacy Policy",
+      "version": "2.0",
+      "effective_date": "2026-01-01",
+      "last_updated": "2025-12-15",
+      "scope": "general"
+    },
+    "raw_front_matter": "doc_id: NC-POL-15\ntitle: Privacy Policy\nversion: 2.0\neffective_date: 2026-01-01\nlast_updated: 2025-12-15\nscope: general",
+    "clean_markdown": "# Privacy Policy\n\n## 1. Who can have an account\n\n**1.1** NovaCart accounts are for people aged 18 or over.\n\n## 2. Data NovaCart collects\n\n**2.1** NovaCart collects account details (name, email, phone number, delivery addresses), order history, payment tokens issued by the payment processor, and technical data such as device type and IP address.\n\n## 3. How data is used\n\n**3.1** Data is used to process orders, deliver parcels, handle returns and warranty claims, prevent fraud and improve the service.\n\n**3.2** Marketing emails are sent only to customers who have agreed to them. A customer can opt out at any time (see [file 16, Section 5]).\n\n## 4. Sharing data\n\n**4.1** NovaCart shares delivery details with couriers and payment details with payment processors.\n\n**4.2** For marketplace orders NovaCart shares the customer's name, delivery address and phone number with the seller. No other personal data is shared with sellers.\n\n**4.3** NovaCart does not sell personal data.\n\n## 5. Cookies\n\n**5.1** Essential cookies are always on. Analytics cookies are optional and the customer can switch them off in the cookie settings.\n\n## 6. Security\n\n**6.1** An account is locked for 30 minutes after 5 failed login attempts.\n\n**6.2** NovaCart tells affected customers about a data breach within 72 hours of confirming it.\n\n## 7. Contact\n\n**7.1** Privacy questions go to privacy@novacart.example.",
+    "section_count": 7,
+    "item_count": 11,
+    "chunk_count": 11,
+    "injections_removed": 0
+  },
+  {
+    "file_name": "16_data_requests_and_retention.md",
+    "file_num": "16",
+    "sha256": "b1ec719e937320a614312587ef51dfae4b036b23b5ed51ea7947d3df6cccf8f0",
+    "metadata": {
+      "doc_id": "NC-POL-16",
+      "title": "Data Requests and Retention",
+      "version": "2.0",
+      "effective_date": "2026-01-01",
+      "last_updated": "2025-12-15",
+      "scope": "general"
+    },
+    "raw_front_matter": "doc_id: NC-POL-16\ntitle: Data Requests and Retention\nversion: 2.0\neffective_date: 2026-01-01\nlast_updated: 2025-12-15\nscope: general",
+    "clean_markdown": "# Data Requests and Retention\n\n## 1. Asking for a copy of your data\n\n**1.1** A customer can ask for a copy of their personal data. NovaCart answers within 30 calendar days.\n\n**1.2** The first request in any 12-month period is free. Each further request in the same period costs Rs. 500.\n\n**1.3** NovaCart verifies the customer's identity before sharing data.\n\n## 2. Deleting data\n\n**2.1** A customer can ask for their account and personal data to be deleted. NovaCart completes the deletion within 30 calendar days.\n\n**2.2** NovaCart cannot delete data for an order that is still inside its return window or warranty period, or data it must keep by law, until that period ends.\n\n## 3. How long data is kept\n\n**3.1** Retention periods are listed below.\n\n| Data | Retention |\n| --- | --- |\n| Order and invoice records | 6 years |\n| Account data | Deleted or anonymised 12 months after the last activity |\n| Customer support chat records | 24 months |\n| Full card numbers | Never stored by NovaCart |\n\n## 4. Corrections\n\n**4.1** NovaCart corrects wrong personal data within 7 days of a request.\n\n## 5. Marketing preferences\n\n**5.1** An unsubscribe request takes effect within 3 business days.",
+    "section_count": 5,
+    "item_count": 8,
+    "chunk_count": 8,
+    "injections_removed": 0
+  },
+  {
+    "file_name": "17_seller_marketplace_rules.md",
+    "file_num": "17",
+    "sha256": "dbd01c83b43abab0aaad3350d1dbc76ce3426a49421463f170403444762fec0d",
+    "metadata": {
+      "doc_id": "NC-POL-17",
+      "title": "Seller Marketplace Rules",
+      "version": "2.0",
+      "effective_date": "2026-02-01",
+      "last_updated": "2026-01-22",
+      "scope": "specific"
+    },
+    "raw_front_matter": "doc_id: NC-POL-17\ntitle: Seller Marketplace Rules\nversion: 2.0\neffective_date: 2026-02-01\nlast_updated: 2026-01-22\nscope: specific",
+    "clean_markdown": "# Seller Marketplace Rules\n\n## 1. Who can sell\n\n**1.1** A seller must be a registered business with a CNIC or NTN and a bank account in the business name. Marketplace items are shown as \"Sold by\" followed by the seller's name.\n\n## 2. Commission and payout\n\n**2.1** NovaCart charges a commission on the selling price of each item, by category.\n\n| Category | Commission |\n| --- | --- |\n| Electronics | 6% |\n| Clothing | 12% |\n| Furniture/bulky | 10% |\n| Personal care | 10% |\n| Grocery/perishables | 5% |\n\n**2.2** NovaCart also charges a handling fee of Rs. 50 per order item line.\n\n**2.3** The seller payout for an item is the selling price minus the commission (rounded half up) minus the handling fee. Example: a clothing item sold for Rs. 3,000 has a commission of Rs. 360 and a payout of 3,000 - 360 - 50 = Rs. 2,590.\n\n**2.4** Payouts are made every Wednesday for items delivered at least 7 days earlier that are not in a return or dispute.\n\n## 3. Dispatch\n\n**3.1** A seller must dispatch an order within 2 business days of payment confirmation.\n\n## 4. Seller performance\n\n**4.1** A seller whose cancellation rate is above 5% in a rolling 30 days gets a warning. Above 10% the seller is suspended for 30 days.\n\n## 5. Prohibited items\n\n**5.1** Sellers must not list counterfeit goods, items that are illegal to sell in Pakistan, or items that NovaCart has banned.\n\n## 6. Rules that affect customers\n\n**6.1** Marketplace items follow the return windows of [file 01] and the extra rules in [file 18].\n\n**6.2** Store credit cannot be used for marketplace items, and promo codes do not apply to them.",
+    "section_count": 6,
+    "item_count": 10,
+    "chunk_count": 10,
+    "injections_removed": 1
+  },
+  {
+    "file_name": "18_seller_return_obligations.md",
+    "file_num": "18",
+    "sha256": "aefb9243d4baa196938b6022f3ceb3972cd1939b2243bf662c55c08612e19cd2",
+    "metadata": {
+      "doc_id": "NC-POL-18",
+      "title": "Seller Return Obligations",
+      "version": "2.0",
+      "effective_date": "2026-04-01",
+      "last_updated": "2026-03-20",
+      "scope": "specific"
+    },
+    "raw_front_matter": "doc_id: NC-POL-18\ntitle: Seller Return Obligations\nversion: 2.0\neffective_date: 2026-04-01\nlast_updated: 2026-03-20\nscope: specific",
+    "clean_markdown": "# Seller Return Obligations\n\n## 1. Return windows and conditions\n\n**1.1** Marketplace items follow the return windows, conditions and fees in [file 01], and the list of non-returnable items in [file 04]. A seller cannot set a shorter window or add fees.\n\n## 2. Confirming a return\n\n**2.1** The seller must confirm receipt of a returned item within 3 business days of NovaCart's courier delivering it to the seller. For marketplace items this replaces the 2-business-day inspection in [file 01, Section 6]. If the seller does not confirm in time, NovaCart approves the refund on the third business day.\n\n**2.2** The refund approval date is the day the seller confirms, or the third business day if the seller does not confirm.\n\n## 3. Who pays for the return\n\n**3.1** The seller pays the return shipping for a NovaCart error return. The customer pays the return label fee for a change-of-mind return, as set out in [file 01, Section 4].\n\n## 4. Warranty on marketplace items\n\n**4.1** The seller gives the warranty on marketplace items. For electronics the seller's warranty is at least 6 months from delivery. The NovaCart warranty in [file 08] does not apply.\n\n## 5. Refused returns\n\n**5.1** If a seller refuses a valid return, NovaCart refunds the customer and charges the seller a penalty of Rs. 1,000 for each refused return.\n\n## 6. Disputes\n\n**6.1** NovaCart decides a dispute between a customer and a seller within 5 business days.",
+    "section_count": 6,
+    "item_count": 7,
+    "chunk_count": 7,
+    "injections_removed": 0
+  },
+  {
+    "file_name": "19_remote_areas_addendum.md",
+    "file_num": "19",
+    "sha256": "4bcb3300aa74e1b8f43b31913a748c393b387116812202f1753fc3cc8ccb2711",
+    "metadata": {
+      "doc_id": "NC-POL-19",
+      "title": "Remote Areas Addendum",
+      "version": "2.0",
+      "effective_date": "2026-04-01",
+      "last_updated": "2026-03-20",
+      "scope": "regional"
+    },
+    "raw_front_matter": "doc_id: NC-POL-19\ntitle: Remote Areas Addendum\nversion: 2.0\neffective_date: 2026-04-01\nlast_updated: 2026-03-20\nscope: regional",
+    "clean_markdown": "# Remote Areas Addendum\n\n## 1. Scope\n\n**1.1** This addendum applies to deliveries to Remote areas: Azad Jammu & Kashmir and Gilgit-Baltistan (see [file 00, Section 2]). Where this addendum is silent, the general files apply.\n\n## 2. Shipping fees\n\n**2.1** The standard shipping fee is Rs. 600 per order. It is free when the subtotal after discount is at least Rs. 12,000.\n\n**2.2** Express delivery, bulky items and grocery/perishables are not available for Remote areas. Cash on delivery is not available for Remote areas.\n\n**2.3** The FREESHIP code is not valid for Remote areas.\n\n## 3. Delivery times\n\n**3.1** Delivery takes 7 to 10 business days after dispatch.\n\n**3.2** A parcel is lost if it has not been delivered 15 business days after dispatch (see [file 07, Section 2]).\n\n## 4. Returns\n\n**4.1** Return windows in Remote areas are 3 days longer than the windows in [file 01, Section 2]: electronics 10 days, clothing 33 days, personal care 17 days (sealed items only).\n\n**4.2** The return label fee is Rs. 400. All other return rules follow [file 01].\n\n## 5. Warranty\n\n**5.1** A warranty repair in Remote areas is completed within 21 calendar days of NovaCart receiving the item, instead of 14.",
+    "section_count": 5,
+    "item_count": 9,
+    "chunk_count": 9,
+    "injections_removed": 0
+  },
+  {
+    "file_name": "20_international_addendum.md",
+    "file_num": "20",
+    "sha256": "b06f6124ed93df214d896ea0a09570d671bfda5a6abd105c9748725694e77011",
+    "metadata": {
+      "doc_id": "NC-POL-20",
+      "title": "International Orders Addendum",
+      "version": "2.0",
+      "effective_date": "2026-04-01",
+      "last_updated": "2026-03-20",
+      "scope": "regional"
+    },
+    "raw_front_matter": "doc_id: NC-POL-20\ntitle: International Orders Addendum\nversion: 2.0\neffective_date: 2026-04-01\nlast_updated: 2026-03-20\nscope: regional",
+    "clean_markdown": "# International Orders Addendum\n\n## 1. Scope\n\n**1.1** This addendum applies to deliveries to the USA, the UK and the UAE (see [file 00, Section 2]). Where this addendum is silent, the general files apply.\n\n## 2. What can be ordered\n\n**2.1** Electronics, clothing and personal care can be delivered internationally. Grocery/perishables and furniture/bulky items cannot.\n\n## 3. Prices and GST\n\n**3.1** GST is not charged on international orders. The price payable for each item is its listed price divided by 1.18, rounded half up to a whole rupee per item.\n\n**3.2** Discount codes and their minimum amounts are worked out on these export prices.\n\n## 4. Shipping\n\n**4.1** Shipping is a flat fee per order.\n\n| Destination | Shipping fee | Delivery time after dispatch |\n| --- | --- | --- |\n| UAE | Rs. 3,500 | 7 to 10 business days |\n| UK | Rs. 5,500 | 10 to 14 business days |\n| USA | Rs. 6,500 | 12 to 18 business days |\n\n**4.2** There is no free-shipping threshold, no express delivery and no FREESHIP code for international orders.\n\n**4.3** A parcel is lost if it has not been delivered 25 business days after dispatch (see [file 07, Section 2]).\n\n**4.4** Worked example (illustration only). A UAE order has one electronics item with a listed price of Rs. 11,800 and uses WELCOME10. Export price: 11,800 / 1.18 = Rs. 10,000. The discount is 10% of 10,000 = Rs. 1,000, which equals the cap. Subtotal after discount: Rs. 9,000. Shipping: Rs. 3,500. Total payable: Rs. 12,500.\n\n## 5. Payment\n\n**5.1** International orders are paid by card only. The customer pays any customs duties and import taxes in the destination country.\n\n## 6. Returns\n\n**6.1** The return window is 10 days from delivery for every category that can be shipped internationally.\n\n**6.2** Personal care items cannot be returned from international orders for change of mind. They can be returned for a NovaCart error.\n\n**6.3** The customer arranges and pays the return shipping. No return label fee is charged. Restocking fees in [file 01, Section 3] still apply.\n\n**6.4** Refunds go back to the card 10 business days after the refund approval date, instead of the time in [file 03, Section 3]. Shipping fees are refunded only under [file 03, Section 2].\n\n## 7. Warranty\n\n**7.1** Electronics keep the 12-month warranty in [file 08]. The customer pays shipping to NovaCart and NovaCart pays the return shipping.",
+    "section_count": 7,
+    "item_count": 14,
+    "chunk_count": 14,
+    "injections_removed": 0
+  },
+  {
+    "file_name": "21_shipping_fee_update_2027.md",
+    "file_num": "21",
+    "sha256": "e4ec66f10c0011e6b13408a7ce9b98e37bc992dbd203e365cc72775dd25ac234",
+    "metadata": {
+      "doc_id": "NC-POL-21",
+      "title": "Shipping Fee Update 2027",
+      "version": "1.0",
+      "effective_date": "2027-02-01",
+      "last_updated": "2026-10-15",
+      "scope": "general"
+    },
+    "raw_front_matter": "doc_id: NC-POL-21\ntitle: Shipping Fee Update 2027\nversion: 1.0\neffective_date: 2027-02-01\nlast_updated: 2026-10-15\nscope: general",
+    "clean_markdown": "# Shipping Fee Update 2027\n\n## 1. What changes\n\n**1.1** From 2027-02-01 the shipping fees for Metro cities and Rest of Pakistan are as follows.\n\n| Destination | Standard fee (per order) | Standard fee is free when the subtotal after discount is at least |\n| --- | --- | --- |\n| Metro cities | Rs. 300 | Rs. 6,000 |\n| Rest of Pakistan | Rs. 400 | Rs. 8,500 |\n\n**1.2** The express fee becomes Rs. 600 (Metro cities only).\n\n**1.3** The bulky surcharge becomes Rs. 1,800 per bulky item in Metro cities and Rs. 3,000 per bulky item in Rest of Pakistan.\n\n## 2. What does not change\n\n**2.1** Fees for Remote areas and International orders are unchanged and stay in [file 19] and [file 20]. All other shipping rules stay as in [file 05] and [file 06].",
+    "section_count": 2,
+    "item_count": 4,
+    "chunk_count": 4,
+    "injections_removed": 0
+  }
+]
