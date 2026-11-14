@@ -1,4 +1,4 @@
-"""Material-style Gradio chat UI for the NovaCart Policy Assistant (`python app_gradio.py`)."""
+"""Gradio chat UI for the NovaCart Policy Assistant (`python app_gradio.py`)."""
 from __future__ import annotations
 
 import html
@@ -10,9 +10,9 @@ from typing import Any
 
 import gradio as gr
 
-PRIMARY, PRIMARY_DARK = "#3F51B5", "#9FA8DA"
-INFO, WARNING, SUCCESS = "#1A73E8", "#B26A00", "#1E8E3E"
-MAX_CHARS, SLOW_SECONDS, POLL_SECONDS, MAX_WIDTH_PX = 1500, 20, 1.5, 880
+PRIMARY, PRIMARY_DARK = "#0B6E69", "#3CCFC4"
+ACCENT, ACCENT_DARK = "#F5B400", "#FFD25A"
+MAX_CHARS, SLOW_SECONDS, POLL_SECONDS, MAX_WIDTH_PX = 1500, 20, 1.5, 860
 LOADING_TEXTS = ("Checking our policies...", "Working out the numbers...", "Double-checking the details...")
 PROCESSED = ("processed/policy_documents.json", "processed/policy_chunks.json")
 SETUP_MSG = "**Setup needed.** The policy index is missing. Run `python preprocess_policies.py`, then restart."
@@ -25,54 +25,75 @@ EXAMPLES = {
     "Warranty refund": "Today is 2026-04-12. My electronics item (paid Rs. 24,000, 12-month warranty) was delivered on 2026-01-10 and cannot be repaired or replaced. What is my warranty refund?",
     "Remote-area shipping": "Today is 2026-05-05. What are the shipping fees and delivery timeline for a Rs. 3,000 order to Gilgit?",
 }
+ICONS = ("↩️", "💵", "🌍", "🛠️", "🏔️")
 CITE_RE = re.compile(r"[\w.-]+\.md, Sections? \d+(?:\.\d+)*")
 
 CSS = f"""
-:root {{ --nc-primary:{PRIMARY}; --nc-bg:#F6F7FB; --nc-card:#FFFFFF; --nc-text:#1F2330; --nc-muted:#5B6275;
-  --nc-info:{INFO}; --nc-warn:{WARNING}; --nc-ok:{SUCCESS}; --nc-tint:#E8EAF6;
-  --nc-e1:0 1px 2px rgba(20,24,40,.12),0 1px 3px rgba(20,24,40,.08); --nc-e2:0 2px 6px rgba(20,24,40,.14),0 4px 12px rgba(20,24,40,.08); }}
-.dark {{ --nc-primary:{PRIMARY_DARK}; --nc-bg:#121212; --nc-card:#1E1E24; --nc-text:#ECEDF2; --nc-muted:#A9AEBD;
-  --nc-info:#8AB4F8; --nc-warn:#FDD663; --nc-ok:#81C995; --nc-tint:#2B2F4A; }}
-body, .gradio-container {{ background:var(--nc-bg)!important; color:var(--nc-text); font-size:16px; line-height:1.5;
-  font-family:'Roboto','Inter',system-ui,-apple-system,'Segoe UI',sans-serif; }}
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+:root {{ --p:{PRIMARY}; --a:{ACCENT}; --ink:#10231F; --muted:#5A6B68; --bg:#F3F6F6; --card:#FFFFFF; --line:#DCE5E3;
+  --soft:#E3F1EF; --user:#0B6E69; --user-ink:#FFFFFF; --info:#0B6E69; --warn:#9A5B00; --warn-bg:#FFF4D6; --info-bg:#E3F1EF;
+  --shadow:0 1px 2px rgba(16,35,31,.06),0 8px 24px -8px rgba(16,35,31,.14);
+  --head:'Bricolage Grotesque','DM Sans',system-ui,sans-serif; --body:'DM Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace; }}
+.dark {{ --p:{PRIMARY_DARK}; --a:{ACCENT_DARK}; --ink:#E8F2F0; --muted:#98ABA7; --bg:#0B1413; --card:#13211F; --line:#233835;
+  --soft:#183230; --user:#3CCFC4; --user-ink:#06201E; --info:#3CCFC4; --warn:#FFD25A; --warn-bg:#2E2610; --info-bg:#163230;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -10px rgba(0,0,0,.6); }}
+body, .gradio-container {{ font-family:var(--body)!important; font-size:16px; line-height:1.55; color:var(--ink);
+  background:radial-gradient(900px 380px at 80% -10%,color-mix(in srgb,var(--p) 14%,transparent),transparent),var(--bg)!important; }}
 footer {{ display:none!important; }}
-.gradio-container {{ max-width:{MAX_WIDTH_PX}px!important; margin:0 auto!important; padding:0 12px!important; }}
-.nc-bar {{ display:flex; align-items:center; gap:12px; padding:12px 4px; }}
-.nc-bar h1 {{ font-size:24px; margin:0; flex:1; color:var(--nc-text); }}
-.nc-greet {{ background:var(--nc-card); border-radius:16px; padding:24px; box-shadow:var(--nc-e1); margin-bottom:8px; }}
-.nc-greet p {{ margin:4px 0; }} .nc-tip, .nc-cap {{ color:var(--nc-muted); font-size:13px; }}
-.nc-chips button, .nc-pill {{ border-radius:999px!important; min-height:44px; }}
-.nc-chips button {{ background:var(--nc-tint)!important; color:var(--nc-text)!important; border:none!important; transition:box-shadow .18s; }}
-.nc-chips button:hover {{ box-shadow:var(--nc-e2); }}
-#nc-send {{ background:var(--nc-primary)!important; color:#fff!important; border-radius:999px!important; min-height:44px; }}
-.dark #nc-send {{ color:#121212!important; }}
-#nc-clear {{ margin-left:auto; min-width:44px; min-height:44px; border-radius:999px!important; }}
-.message.bot, .bot.message {{ background:var(--nc-card)!important; border-radius:16px!important; box-shadow:var(--nc-e1); max-width:85%; }}
-.message.user, .user.message {{ background:var(--nc-tint)!important; border-radius:16px!important; max-width:85%; }}
-.nc-cite {{ font-size:12px; color:var(--nc-muted); white-space:nowrap; }}
-.nc-call {{ display:flex; gap:8px; padding:12px 16px; border-radius:12px; margin-bottom:8px; border-left:4px solid; background:var(--nc-bg); }}
-.nc-call.info {{ border-color:var(--nc-info); }} .nc-call.warn {{ border-color:var(--nc-warn); }}
-.nc-chip {{ display:inline-block; margin:2px 4px 2px 0; padding:4px 12px; border-radius:999px; background:var(--nc-tint); font-size:13px; overflow-wrap:anywhere; }}
-.nc-det summary {{ cursor:pointer; color:var(--nc-primary); font-size:14px; min-height:44px; display:flex; align-items:center; }}
-.nc-table {{ width:100%; font-size:14px; border-collapse:collapse; display:block; overflow-x:auto; }}
-.nc-table td, .nc-table th {{ padding:6px 8px; text-align:left; overflow-wrap:anywhere; }}
-.nc-table th {{ color:var(--nc-muted); font-weight:500; }}
-.nc-dots span {{ display:inline-block; width:8px; height:8px; margin-right:4px; border-radius:50%; background:var(--nc-primary); animation:nc-b 1s infinite; }}
+.gradio-container {{ max-width:{MAX_WIDTH_PX}px!important; margin:0 auto!important; padding:0 16px 24px!important; }}
+.nc-bar {{ display:flex; align-items:center; gap:12px; padding:20px 2px 8px; }}
+.nc-logo {{ width:40px; height:40px; border-radius:12px; display:grid; place-items:center; font-size:22px;
+  background:linear-gradient(135deg,var(--p),color-mix(in srgb,var(--p) 55%,#000)); box-shadow:var(--shadow); }}
+.nc-bar h1 {{ font:800 24px/1.1 var(--head); letter-spacing:-.02em; margin:0; flex:1; color:var(--ink); }}
+.nc-bar small {{ display:block; font:500 13px var(--body); color:var(--muted); letter-spacing:0; margin-top:2px; }}
+#nc-clear {{ margin-left:auto; min-height:44px; border-radius:999px!important; background:transparent!important;
+  border:1px solid var(--line)!important; color:var(--muted)!important; }}
+#nc-clear:hover {{ color:var(--ink)!important; border-color:var(--p)!important; }}
+.nc-hero {{ padding:28px 4px 12px; }}
+.nc-hero h2 {{ font:800 clamp(28px,5.5vw,44px)/1.05 var(--head); letter-spacing:-.03em; margin:0 0 10px; color:var(--ink); max-width:16ch; }}
+.nc-hero p {{ margin:0; color:var(--muted); max-width:52ch; }}
+.nc-chips {{ display:grid!important; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px!important; }}
+.nc-chips button {{ min-height:56px; justify-content:flex-start!important; text-align:left; border-radius:16px!important; background:var(--card)!important;
+  color:var(--ink)!important; border:1px solid var(--line)!important; font-weight:500; box-shadow:none; transition:transform .15s,border-color .15s,box-shadow .15s; }}
+.nc-chips button:hover {{ border-color:var(--p)!important; box-shadow:var(--shadow); transform:translateY(-1px); }}
+.message.user, .user.message, .message-row .user {{ background:var(--user)!important; color:var(--user-ink)!important; border:none!important;
+  border-radius:20px 20px 6px 20px!important; max-width:85%; }}
+.message.bot, .bot.message, .message-row .bot {{ background:var(--card)!important; color:var(--ink)!important; border:1px solid var(--line)!important;
+  border-radius:20px 20px 20px 6px!important; box-shadow:var(--shadow); max-width:88%; }}
+.nc-cite {{ font:400 12px var(--mono); color:var(--muted); white-space:nowrap; background:var(--soft); padding:1px 6px; border-radius:6px; }}
+.nc-call {{ display:flex; gap:10px; padding:12px 14px; border-radius:14px; margin-bottom:10px; font-size:14px; }}
+.nc-call.info {{ background:var(--info-bg); }} .nc-call.warn {{ background:var(--warn-bg); }}
+.nc-call b {{ font-family:var(--head); }}
+.nc-chip {{ display:inline-block; margin:3px 6px 3px 0; padding:4px 12px; border-radius:999px; background:var(--soft); font-size:13px; overflow-wrap:anywhere; }}
+.nc-det {{ border-top:1px dashed var(--line); margin-top:10px; }}
+.nc-det summary {{ cursor:pointer; color:var(--p); font:600 14px var(--body); min-height:44px; display:flex; align-items:center; }}
+.nc-table {{ width:100%; font:400 13px var(--mono); border-collapse:collapse; display:block; overflow-x:auto; padding:8px 12px; margin-bottom:8px;
+  background:var(--bg); border-radius:12px; border:1px solid var(--line); }}
+.nc-table td, .nc-table th {{ padding:5px 4px; text-align:left; overflow-wrap:anywhere; border-bottom:1px dotted var(--line); }}
+.nc-table td:last-child {{ text-align:right; font-weight:500; white-space:nowrap; }}
+.nc-table th {{ font:800 14px var(--head); color:var(--ink); padding-top:10px; border-bottom:1px solid var(--line); }}
+.nc-dots span {{ display:inline-block; width:8px; height:8px; margin-right:4px; border-radius:50%; background:var(--p); animation:nc-b 1s infinite; }}
 .nc-dots span:nth-child(2) {{ animation-delay:.15s; }} .nc-dots span:nth-child(3) {{ animation-delay:.3s; }}
-@keyframes nc-b {{ 0%,80%,100% {{ opacity:.25; }} 40% {{ opacity:1; }} }}
-:focus-visible {{ outline:2px solid var(--nc-primary)!important; outline-offset:2px; }}
-button, .message, details {{ transition:all .18s ease; }}
+@keyframes nc-b {{ 0%,80%,100% {{ opacity:.25; transform:translateY(0); }} 40% {{ opacity:1; transform:translateY(-3px); }} }}
+.nc-composer {{ background:var(--card); border:1px solid var(--line); border-radius:24px; padding:8px 8px 8px 16px; box-shadow:var(--shadow); align-items:center; }}
+.nc-composer textarea {{ background:transparent!important; border:none!important; box-shadow:none!important; font-size:16px!important; }}
+#nc-send {{ background:var(--p)!important; color:#fff!important; border:none!important; border-radius:999px!important; min-height:44px; font-weight:600; }}
+.dark #nc-send {{ color:#06201E!important; }}
+#nc-send:hover {{ filter:brightness(1.1); }}
+.nc-cap {{ color:var(--muted); font-size:13px; }}
+:focus-visible {{ outline:2px solid var(--p)!important; outline-offset:2px; }}
 @media (prefers-reduced-motion:reduce) {{ * {{ animation:none!important; transition:none!important; }} }}
-@media (max-width:480px) {{ .nc-bar h1 {{ font-size:20px; }} .message.bot, .message.user {{ max-width:95%; }} }}
+@media (max-width:480px) {{ .nc-bar h1 {{ font-size:20px; }} .message.bot, .message.user {{ max-width:96%; }} .nc-hero h2 {{ max-width:none; }} }}
 """
 
 
 class NovaCartTheme(gr.themes.Soft):
-    """Indigo Material-like theme layered on Gradio's Soft theme."""
+    """Teal theme layered on Gradio's Soft theme; most styling lives in CSS."""
 
     def __init__(self) -> None:
-        super().__init__(primary_hue="indigo", neutral_hue="slate",
-                         font=[gr.themes.GoogleFont("Roboto"), "system-ui", "sans-serif"], radius_size="lg")
+        super().__init__(primary_hue="teal", neutral_hue="slate", radius_size="lg",
+                         font=[gr.themes.GoogleFont("DM Sans"), "system-ui", "sans-serif"])
 
 
 # ---------- pure helpers ----------
@@ -244,20 +265,22 @@ def build_app() -> gr.Blocks:
     kw = {"theme": NovaCartTheme(), "css": CSS} if legacy else {}
     with gr.Blocks(title="NovaCart Policy Assistant", **kw) as demo:
         last_q = gr.State("")
-        gr.HTML('<div class="nc-bar"><span style="font-size:28px" aria-hidden="true">🛒</span>'
-                '<h1>NovaCart Policy Assistant</h1></div>')
-        clear_btn = gr.Button("🗑️ Clear chat", elem_id="nc-clear", size="sm", variant="secondary")
+        with gr.Row(elem_classes="nc-barrow"):
+            gr.HTML('<div class="nc-bar"><div class="nc-logo" aria-hidden="true">🛒</div>'
+                    '<h1>NovaCart Policy Assistant<small>Answers grounded in our written policies</small></h1></div>')
+            clear_btn = gr.Button("Clear chat", elem_id="nc-clear", size="sm", scale=0, min_width=110)
         with gr.Column(visible=True) as empty:
-            gr.HTML('<div class="nc-greet"><p><b>Hi! Ask me about returns, refunds, shipping, promo codes, '
-                    'warranty or payments.</b></p><p class="nc-tip">Include your order date and city for the most accurate answer.</p></div>')
+            gr.HTML('<div class="nc-hero"><h2>What can I help you sort out?</h2>'
+                    '<p>Ask about returns, refunds, shipping, promo codes, warranty or payments. '
+                    'Include your order date and city for the most accurate answer.</p></div>')
             with gr.Row(elem_classes="nc-chips"):
-                chips = [gr.Button(label, size="sm") for label in EXAMPLES]
+                chips = [gr.Button(f"{icon}  {label}", size="sm") for icon, label in zip(ICONS, EXAMPLES)]
         ckw = {"type": "messages"} if "type" in inspect.signature(gr.Chatbot.__init__).parameters else {}
         chat = gr.Chatbot(height=480, render_markdown=True, autoscroll=True, label="Conversation", **ckw)
         with gr.Row():
             retry = gr.Button("Try again", visible=False, size="sm")
             edit = gr.Button("Edit and resend", visible=False, size="sm")
-        with gr.Row():
+        with gr.Row(elem_classes="nc-composer"):
             box = gr.Textbox(placeholder="e.g. On 2026-06-15 in Karachi I bought a shirt for Rs. 2,400... how much will I get back?",
                              lines=1, max_lines=6, show_label=False, container=False, scale=8, autofocus=True)
             send = gr.Button("Send", elem_id="nc-send", variant="primary", scale=1, min_width=96)
