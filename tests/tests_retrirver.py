@@ -83,34 +83,62 @@ def test_2025_returns_query_uses_file_02_and_excludes_file_01(corpus_documents, 
 
 
 def test_one_hop_item_level_expansion(corpus_documents, corpus_chunks):
-    # Find an active chunk in the corpus that contains a dotted item-level xref [file NN, Section X.Y]
+    # Verify item-level [file NN, Section X.Y] expansion resolves only the exact target item
+    synthetic_chunks = list(corpus_chunks) + [
+        {
+            "chunk_id": "12_9.9",
+            "chunk_type": "item",
+            "file_name": "12_promo_code_rules.md",
+            "file_num": "12",
+            "doc_id": "NC-POL-12",
+            "doc_title": "Promo Code Rules",
+            "version": "2.0",
+            "effective_date": "2026-06-01",
+            "last_updated": "2026-06-01",
+            "scope": "general",
+            "section_num": "9",
+            "section_title": "Special item reference test",
+            "item_id": "9.9",
+            "citation": "12_promo_code_rules.md, Section 9.9",
+            "text": "Promo code discount splitting follows rounding rules in [file 00, Section 1.3].",
+            "has_table": False,
+            "has_list": False,
+            "cross_references": [
+                {
+                    "raw": "[file 00, Section 1.3]",
+                    "target_file_num": "00",
+                    "target_section": "1.3",
+                    "valid": True,
+                }
+            ],
+        }
+    ]
+
     ctx = _ctx(
-        user_query="How are promo code discounts calculated and split on eligible items?",
+        user_query="Special item reference test for promo code discount splitting",
         contact_date="2026-06-15",
         order_date="2026-06-15",
         region="metro",
-        topics=["promo", "checkout"],
-        promo_code="STYLE15",
+        topics=["promo"],
     )
     resolution = resolve_active_policies(ctx, corpus_documents)
-    result = retrieve_relevant_chunks(ctx.user_query, ctx, resolution, corpus_chunks, top_k=10)
+    result = retrieve_relevant_chunks(ctx.user_query, ctx, resolution, synthetic_chunks, top_k=5)
 
     item_traces = [
         t
         for t in result.expansion_trace
-        if t["action"] == "followed" and t.get("target_section") and "." in t["target_section"]
+        if t["action"] == "followed" and t.get("target_section") == "1.3"
     ]
-    assert len(item_traces) >= 1
+    assert len(item_traces) == 1
+    assert item_traces[0]["resolved_chunk_ids"] == ["00_1.3"]
 
-    target_cid = item_traces[0]["resolved_chunk_ids"][0]
     xref_chunk = next(
-        (rc for rc in result.cross_referenced_chunks if rc.chunk["chunk_id"] == target_cid),
+        (rc for rc in result.cross_referenced_chunks if rc.chunk["chunk_id"] == "00_1.3"),
         None,
     )
     assert xref_chunk is not None
     assert xref_chunk.retrieval_source == "cross_reference"
-    assert len(xref_chunk.referenced_by) >= 1
-    assert ", Section " in xref_chunk.referenced_by[0]
+    assert "12_promo_code_rules.md, Section 9.9" in xref_chunk.referenced_by
 
 
 # ---------------------------------------------------------------------------
