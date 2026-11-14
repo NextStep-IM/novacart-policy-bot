@@ -38,6 +38,11 @@ st.markdown(
         font-family: monospace;
         font-size: 0.82rem;
     }
+    .cite {
+        color: rgba(128, 128, 128, 0.95);
+        font-size: 0.78rem;
+        white-space: nowrap;
+    }
     </style>
     """,
     unsafe_allow_html=True,
@@ -101,6 +106,60 @@ def format_markdown_readability(text: str) -> str:
     return cleaned
 
 
+CITE_RE = re.compile(r"\b\d{2}_[a-z0-9_]+\.md, Section \d+(?:\.\d+)*")
+
+
+def mute_citations(text: str) -> str:
+    """Keep every citation verbatim but show it small and grey so the answer reads cleanly."""
+    return CITE_RE.sub(lambda m: f'<span class="cite">{m.group(0)}</span>', text)
+
+
+def friendly_source(citation: str) -> str:
+    """'14_store_credit.md, Section 3.1' -> 'Store credit · Section 3.1'."""
+    m = re.match(r"\d{2}_([a-z0-9_]+)\.md, Section (\S+)", citation)
+    if not m:
+        return citation
+    name = m.group(1).replace("_", " ").replace(" and ", " & ").capitalize()
+    return f"{name} · Section {m.group(2)}"
+
+
+def humanize_key(key: str) -> str:
+    key = re.sub(r"^step_\d+_", "", str(key))
+    return key.replace("_", " ").strip().capitalize()
+
+
+def format_value(value: Any) -> str:
+    if isinstance(value, bool):
+        return "Yes" if value else "No"
+    if isinstance(value, int):
+        return f"Rs. {value:,}"
+    if isinstance(value, float):
+        return f"{value:,.2f}"
+    if isinstance(value, (list, tuple)):
+        return ", ".join(format_value(v) for v in value)
+    if isinstance(value, dict):
+        return "; ".join(f"{humanize_key(k)}: {format_value(v)}" for k, v in value.items())
+    return str(value)
+
+
+def render_math(calc_trace: Any) -> None:
+    """Readable table of the calculation steps instead of raw JSON."""
+    traces = calc_trace if isinstance(calc_trace, list) else [calc_trace]
+    for trace in traces:
+        name = trace.get("name", "calculation") if isinstance(trace, dict) else "calculation"
+        result = trace.get("result", trace) if isinstance(trace, dict) else {"value": trace}
+        st.markdown(f"**{humanize_key(name)}**")
+        if isinstance(result, dict):
+            rows = [
+                {"Step": humanize_key(k), "Value": format_value(v)}
+                for k, v in result.items()
+                if v not in (None, "", [], {})
+            ]
+            st.dataframe(rows, use_container_width=True, hide_index=True)
+        else:
+            st.write(format_value(result))
+
+
 def render_assistant_turn(payload: dict[str, Any]) -> None:
     """Renders the formatted answer, disclosures, citations, and audit tabs cleanly."""
     answer_md = format_markdown_readability(payload.get("answer", ""))
@@ -110,46 +169,47 @@ def render_assistant_turn(payload: dict[str, Any]) -> None:
     calc_trace = payload.get("calculation_trace")
     query_ctx = payload.get("query_context")
 
-    # 1. Highlight mandatory policy version / conflict notices prominently
+    # 1. Only show a separate notice if the answer itself did not already explain it
+    answer_lower = answer_md.lower()
     for disc in disclosures:
-        d_type = (
-            disc.get("kind", disc.get("type", ""))
-            if isinstance(disc, dict)
-            else getattr(disc, "kind", getattr(disc, "type", ""))
-        )
-        msg = (
-            disc.get("instruction") or disc.get("message") or str(disc)
-            if isinstance(disc, dict)
-            else getattr(disc, "instruction", str(disc))
-        )
-        if msg and msg.lower() in answer_md.lower():
+        get = lambda key, d=disc: d.get(key) if isinstance(d, dict) else getattr(d, key, None)
+        d_type = get("kind") or get("type") or ""
+        msg = get("message") or get("instruction") or ""
+        files = get("files") or []
+        if d_type == "missing_date":
+            continue
+        if files and all(f.lower() in answer_lower for f in files):
+            continue
+        if msg and msg.lower() in answer_lower:
             continue
         if d_type == "unresolved_conflict":
-            st.warning(f"**Policy Conflict Notice:** {msg}", icon="⚠️")
+            st.warning(f"**Our policies disagree:** {msg}", icon="⚠️")
         else:
-            st.info(f"**Policy Version Notice:** {msg}", icon="ℹ️")
+            st.info(f"**Good to know:** {msg}", icon="ℹ️")
 
-    # 2. Main nicely formatted Markdown answer
-    st.markdown(answer_md)
+    # 2. Main answer (citations kept verbatim, styled quietly)
+    st.markdown(mute_citations(answer_md), unsafe_allow_html=True)
 
-    # 3. Clean Citation Pills right below the answer
+    # 3. Sources, tucked away but one click from view
     if citations:
-        pills_html = "".join(
-            f'<span class="citation-pill">📄 {c}</span>' for c in dict.fromkeys(citations)
-        )
-        st.markdown(f"**Sources Cited:**<br>{pills_html}", unsafe_allow_html=True)
+        unique = list(dict.fromkeys(citations))
+        with st.expander(f"📄 Where this comes from ({len(unique)})", expanded=False):
+            pills_html = "".join(
+                f'<span class="citation-pill" title="{c}">{friendly_source(c)}</span>' for c in unique
+            )
+            st.markdown(pills_html, unsafe_allow_html=True)
 
     # 4. Comfortable tabbed inspection drawer for math & policy resolution details
     has_details = any([calc_trace, active_policies, query_ctx])
     if has_details:
-        with st.expander("View Calculation Breakdown & Active Policy Details", expanded=False):
+        with st.expander("See the details behind this answer", expanded=False):
             tab_names = []
             if calc_trace:
-                tab_names.append("🧮 Math Breakdown")
+                tab_names.append("🧮 How it was calculated")
             if active_policies:
-                tab_names.append("📚 Active Policies")
+                tab_names.append("📚 Policies used")
             if query_ctx:
-                tab_names.append("🔎 Extracted Query Info")
+                tab_names.append("🔎 What I understood")
 
             tabs = st.tabs(tab_names)
             idx = 0
@@ -160,7 +220,7 @@ def render_assistant_turn(payload: dict[str, Any]) -> None:
                         for step in calc_trace["steps"]:
                             st.markdown(f"- {step}")
                     else:
-                        st.json(calc_trace)
+                        render_math(calc_trace)
                 idx += 1
 
             if active_policies:
@@ -257,12 +317,17 @@ if user_input:
         st.markdown(user_input)
 
     with st.chat_message("assistant"):
-        with st.spinner("Checking active policies, cross-references, and exact Rupee math..."):
+        with st.spinner("Checking our policies and working out the numbers..."):
             try:
                 raw_result = st.session_state.bot.answer(user_input)
                 payload = extract_structured_response(raw_result)
-            except Exception as exc:
-                payload = {"answer": f"**Error processing request:** `{exc}`"}
+            except Exception:
+                payload = {
+                    "answer": (
+                        "Sorry, something went wrong on our side while checking that. "
+                        "Please try again, or contact NovaCart support if it keeps happening."
+                    )
+                }
 
             render_assistant_turn(payload)
 
